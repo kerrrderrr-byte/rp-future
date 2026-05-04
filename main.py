@@ -297,19 +297,40 @@ def get_game_supabase(session_id):
     if not supabase: return None
     try:
         result = supabase.table('game_sessions').select('*').eq('session_id', session_id).single().execute()
-        return result.data if result.data else None
-    except:
+        if result.data:
+            game = dict(result.data)
+            # Парсим JSON поля обратно
+            if isinstance(game.get('game_history'), str):
+                game['game_history'] = json.loads(game['game_history'])
+            if isinstance(game.get('ai_context'), str):
+                game['ai_context'] = json.loads(game['ai_context'])
+            return game
+        return None
+    except Exception as e:
+        print(f"❌ Supabase get error: {e}")
         return None
 
 
 def save_game_supabase(game_data):
     if not supabase: return False
     try:
+        # Только нужные колонки для Supabase
+        supabase_data = {
+            'session_id': game_data['session_id'],
+            'player_name': game_data['player_name'],
+            'world_id': game_data.get('world_id', 'academy_sakura'),
+            'world_name': game_data.get('world_name', 'Академия Сакура'),
+            'status': game_data.get('status', 'active'),
+            'current_location': game_data.get('current_location', 'classroom'),
+            'game_history': json.dumps(game_data.get('game_history', [])),
+            'ai_context': json.dumps(game_data.get('ai_context', {}))
+        }
+
         existing = supabase.table('game_sessions').select('id').eq('session_id', game_data['session_id']).execute()
         if existing.data:
-            supabase.table('game_sessions').update(game_data).eq('session_id', game_data['session_id']).execute()
+            supabase.table('game_sessions').update(supabase_data).eq('session_id', game_data['session_id']).execute()
         else:
-            supabase.table('game_sessions').insert(game_data).execute()
+            supabase.table('game_sessions').insert(supabase_data).execute()
         return True
     except Exception as e:
         print(f"❌ Supabase save error: {e}")
@@ -335,7 +356,7 @@ def save_game(game_data):
 # ============================================
 # DEEPSEEK API
 # ============================================
-def call_deepseek(messages, max_tokens=500):
+def call_deepseek(messages, max_tokens=800):
     if not DEEPSEEK_API_KEY:
         return get_test_response()
 
@@ -348,18 +369,19 @@ def call_deepseek(messages, max_tokens=500):
         'model': 'deepseek-chat',
         'messages': messages,
         'max_tokens': max_tokens,
-        'temperature': 0.8
+        'temperature': 0.8,
+        'stop': None  # Не обрезать ответ
     }
 
     try:
-        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=45)
+        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=60)
         response.raise_for_status()
         result = response.json()
 
         content = result['choices'][0]['message']['content']
-        content = content.strip()
 
-        # Очистка от markdown
+        # Очистка
+        content = content.strip()
         if content.startswith('```json'):
             content = content[7:]
         if content.startswith('```'):
@@ -368,11 +390,28 @@ def call_deepseek(messages, max_tokens=500):
             content = content[:-3]
         content = content.strip()
 
-        return json.loads(content)
+        # Проверяем что JSON валидный
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # Пробуем исправить обрезанный JSON
+            # Добавляем недостающие скобки
+            if not content.endswith('}'):
+                # Находим последнюю валидную строку
+                lines = content.split('\n')
+                # Убираем последнюю обрезанную строку
+                lines = lines[:-1]
+                # Добавляем закрывающие скобки
+                fixed = '\n'.join(lines) + '\n  }\n}'
+                try:
+                    return json.loads(fixed)
+                except:
+                    pass
+            raise
 
     except json.JSONDecodeError as e:
         print(f"❌ JSON Parse Error: {e}")
-        print(f"Raw: {content[:200] if 'content' in dir() else 'N/A'}")
+        print(f"Raw: {content[:300] if 'content' in dir() else 'N/A'}...")
         return get_test_response()
     except requests.Timeout:
         print("❌ DeepSeek Timeout")
