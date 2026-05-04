@@ -534,7 +534,7 @@
                        maxlength="200"
                        autocomplete="off"
                        disabled>
-                <button class="send-button" id="sendButton" onclick="sendAction()" disabled>
+                <button class="send-button" id="sendButton" disabled>
                     ▶
                 </button>
             </div>
@@ -880,7 +880,9 @@
             alert(`В истории ${gameData.game_history.length} событий.`);
         }
 
-        // ==================== ОБРАБОТЧИКИ ====================
+                // ==================== ОБРАБОТЧИКИ ====================
+
+        // Отправка по Enter
         document.getElementById('playerInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -888,13 +890,27 @@
             }
         });
 
+        // Отправка по клику на кнопку
+        document.getElementById('sendButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            sendAction();
+        });
+
+        // Для мобильных устройств
+        document.getElementById('sendButton').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            sendAction();
+        });
+
+        // Клик по текстовому полю для пропуска печати
         document.querySelector('.text-box-container').addEventListener('click', function(e) {
-            if (isTyping && e.target !== document.getElementById('playerInput')) {
+            if (isTyping && e.target !== document.getElementById('playerInput') && e.target.id !== 'sendButton') {
                 skipTyping();
                 setTimeout(() => enableInput(), 50);
             }
         });
 
+        // Пробел для пропуска печати
         document.addEventListener('keydown', function(e) {
             if (e.key === ' ' && isTyping && document.activeElement !== document.getElementById('playerInput')) {
                 e.preventDefault();
