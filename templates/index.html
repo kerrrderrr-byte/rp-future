@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RP Future - Генеративная новелла</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Приветствуем в RP Future</h1>
+        <div class="subtitle">✦ Генеративная новелла с ИИ ✦</div>
+
+        <button class="anime-button primary" onclick="openNewGameModal()">
+            ✦ Начать новую игру ✦
+        </button>
+        <br>
+        <button class="anime-button secondary" onclick="continueGame()">
+            ♥ Продолжить игру ♥
+        </button>
+
+        <div id="status">
+            🟢 Сервер работает
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="newGameModal" class="modal">
+        <div class="modal-content">
+            <h2>✨ Создание персонажа ✨</h2>
+
+            <label>👤 Имя персонажа:</label>
+            <input type="text" id="characterName" class="anime-input" placeholder="Введите имя героя...">
+
+            <label>🌍 Название мира:</label>
+            <input type="text" id="worldName" class="anime-input" placeholder="Введите название мира...">
+
+            <br><br>
+            <button class="anime-button primary" onclick="startNewGame()">
+                ✦ Начать приключение ✦
+            </button>
+            <button class="anime-button secondary" onclick="closeNewGameModal()" style="background: #999;">
+                ✕ Отмена
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function openNewGameModal() {
+            document.getElementById('newGameModal').style.display = 'flex';
+            document.getElementById('characterName').focus();
+        }
+
+        function closeNewGameModal() {
+            document.getElementById('newGameModal').style.display = 'none';
+            document.getElementById('characterName').value = '';
+            document.getElementById('worldName').value = '';
+        }
+
+         async function startNewGame() {
+            const characterName = document.getElementById('characterName').value.trim();
+            const worldName = document.getElementById('worldName').value.trim();
+
+            if (!characterName || !worldName) {
+                alert('Пожалуйста, заполни все поля!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/create_game', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        character_name: characterName,
+                        world_name: worldName
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    localStorage.setItem('currentSessionId', data.session_id);
+                    // Редирект на игровую страницу
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            } catch (error) {
+                alert('Ошибка соединения с сервером');
+            }
+        }
+
+        async function continueGame() {
+            const sessionId = localStorage.getItem('currentSessionId');
+
+            if (!sessionId) {
+                alert('Нет сохраненных игр. Начни новую игру!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/load_game', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({session_id: sessionId})
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Игра не найдена. Начни новую!');
+                    localStorage.removeItem('currentSessionId');
+                }
+            } catch (error) {
+                alert('Ошибка соединения');
+            }
+        }
+
+        // Закрытие по клику вне окна
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeNewGameModal();
+            }
+        });
+    </script>
+</body>
+</html>
