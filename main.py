@@ -31,6 +31,22 @@ DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 STORAGE_FILE = 'games_storage.json'
 
+
+@app.route('/game')
+def game_page():
+    session_id = request.args.get('session', '')
+    game = get_game(session_id)
+    if not game:
+        return "Игра не найдена. Начните новую игру!", 404
+
+    # Определяем мобильное устройство
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone', 'ipad', 'ipod'])
+
+    if is_mobile:
+        return render_template('game_mobile.html', game=game)
+    return render_template('game.html', game=game)
+
 # Supabase клиент
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
@@ -57,7 +73,7 @@ LOCAL_WORLDS = {
         "description": "Школьная повседневность в японской старшей школе",
         "image_url": "/static/images/worlds/school_preview.png",
 
-                "characters": {
+        "characters": {
             "narrator": {
                 "id": "narrator", "name": "Рассказчик", "role": "narrator",
                 "personality": "Нейтральный повествователь",
@@ -150,54 +166,64 @@ LOCAL_WORLDS = {
             }
         },
 
-            "locations": {
-        "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный", "bg_image": "bg_classroom"},
-        "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на море и город", "mood": "Романтичный", "bg_image": "bg_rooftop"},
-        "library": {"name": "Библиотека", "description": "Трёхэтажная библиотека с пианино", "mood": "Загадочный", "bg_image": "bg_library"},
-        "courtyard": {"name": "Школьный двор", "description": "Двор с вековой сакурой", "mood": "Весенний", "bg_image": "bg_courtyard"},
-        "cafeteria": {"name": "Столовая", "description": "Просторная столовая с панорамными окнами", "mood": "Шумный", "bg_image": "bg_cafeteria"},
-        "gym": {"name": "Спортзал", "description": "Большой спортзал с площадкой", "mood": "Энергичный", "bg_image": "bg_gym"},
-        "clubroom": {"name": "Клубная комната", "description": "Уютная комната литклуба", "mood": "Творческий", "bg_image": "bg_clubroom"},
-        "nursery": {"name": "Медкабинет", "description": "Светлый кабинет с мятным запахом", "mood": "Успокаивающий", "bg_image": "bg_nursery"},
-        "park": {"name": "Приморский парк", "description": "Парк на берегу моря", "mood": "Романтичный", "bg_image": "bg_park"},
-        "mall": {"name": "ТЦ Сакура-Молл", "description": "Современный торговый центр", "mood": "Современный", "bg_image": "bg_mall"},
-        "beach": {"name": "Пляж", "description": "Песчаный пляж в 15 минутах от школы", "mood": "Свободный", "bg_image": "bg_beach"},
-        "shrine": {"name": "Храм", "description": "Старый синтоистский храм на холме", "mood": "Мистический", "bg_image": "bg_shrine"},
-        "hallway": {"name": "Коридор", "description": "Школьный коридор со шкафчиками", "mood": "Оживлённый", "bg_image": "bg_hallway"},
-        "gate": {"name": "Школьные ворота", "description": "Главные ворота Академии Сакура", "mood": "Встречающий", "bg_image": "bg_gate"},
-        "classroom_evening": {"name": "Класс вечером", "description": "Пустой класс после уроков", "mood": "Ностальгический", "bg_image": "bg_classroom_evening"}
-    },
+        "locations": {
+            "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный", "bg_image": "bg_classroom"},
+            "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на море и город", "mood": "Романтичный", "bg_image": "bg_rooftop"},
+            "library": {"name": "Библиотека", "description": "Трёхэтажная библиотека с пианино", "mood": "Загадочный", "bg_image": "bg_library"},
+            "courtyard": {"name": "Школьный двор", "description": "Двор с вековой сакурой", "mood": "Весенний", "bg_image": "bg_courtyard"},
+            "cafeteria": {"name": "Столовая", "description": "Просторная столовая с панорамными окнами", "mood": "Шумный", "bg_image": "bg_cafeteria"},
+            "gym": {"name": "Спортзал", "description": "Большой спортзал с площадкой", "mood": "Энергичный", "bg_image": "bg_gym"},
+            "clubroom": {"name": "Клубная комната", "description": "Уютная комната литклуба", "mood": "Творческий", "bg_image": "bg_clubroom"},
+            "nursery": {"name": "Медкабинет", "description": "Светлый кабинет с мятным запахом", "mood": "Успокаивающий", "bg_image": "bg_nursery"},
+            "park": {"name": "Приморский парк", "description": "Парк на берегу моря", "mood": "Романтичный", "bg_image": "bg_park"},
+            "mall": {"name": "ТЦ Сакура-Молл", "description": "Современный торговый центр", "mood": "Современный", "bg_image": "bg_mall"},
+            "beach": {"name": "Пляж", "description": "Песчаный пляж в 15 минутах от школы", "mood": "Свободный", "bg_image": "bg_beach"},
+            "shrine": {"name": "Храм", "description": "Старый синтоистский храм на холме", "mood": "Мистический", "bg_image": "bg_shrine"},
+            "hallway": {"name": "Коридор", "description": "Школьный коридор со шкафчиками", "mood": "Оживлённый", "bg_image": "bg_hallway"},
+            "gate": {"name": "Школьные ворота", "description": "Главные ворота Академии Сакура", "mood": "Встречающий", "bg_image": "bg_gate"},
+            "classroom_evening": {"name": "Класс вечером", "description": "Пустой класс после уроков", "mood": "Ностальгический", "bg_image": "bg_classroom_evening"}
+        },
 
-        "rules_for_ai": """Ты - рассказчик в визуальной новелле "Академия Сакура". Жанр: повседневность, школа, романтика.
+        "rules_for_ai": """ТЫ — JSON-ГЕНЕРАТОР. Отвечай ТОЛЬКО валидным JSON без текста вне него.
 
-ОТВЕЧАЙ СТРОГО ТОЛЬКО JSON, БЕЗ ЛЮБОГО ТЕКСТА ДО И ПОСЛЕ.
+РАЗРЕШЁННЫЕ ЛОКАЦИИ (только эти): classroom, rooftop, library, courtyard, cafeteria, gym, clubroom, nursery, park, mall, beach, shrine, hallway, gate, classroom_evening
 
-ФОРМАТ:
+РАЗРЕШЁННЫЕ SPEAKER_ID (только эти): narrator, garfild, monika, reiko, yuki, takeshi, hana, haru, akira, sensei, yumi, ryuu, emi
+
+РАЗРЕШЁННЫЕ ЭМОЦИИ: normal, happy, sad, angry, surprised, excited, serious, shy, flirty, worried, proud
+
+ФОРМАТ ОТВЕТА (строго JSON, без текста вокруг):
 {
-    "narrator_text": "описание сцены",
-    "speaker_id": "garfild/monika/reiko/narrator",
-    "speaker_name": "имя",
-    "speaker_text": "речь персонажа",
-    "emotion": "normal/happy/sad/angry/surprised/excited/serious",
-    "location": "classroom/rooftop/library/courtyard",
-    "sprites": {
-        "garfild": {"visible": true/false, "position": "left", "highlight": true/false, "emotion": "normal"},
-        "monika": {"visible": true/false, "position": "center", "highlight": true/false, "emotion": "normal"},
-        "reiko": {"visible": true/false, "position": "right", "highlight": true/false, "emotion": "normal"}
-    }
+  "time_of_day": "morning",
+  "response_type": "single_reply",
+  "narrator_text": "описание",
+  "speaker_id": "garfild",
+  "speaker_name": "Гарфилд",
+  "speaker_text": "текст",
+  "emotion": "normal",
+  "location": "classroom",
+  "dialog_end_marker": "silence",
+  "sprites": {
+    "garfild": {"visible": true, "position": "left", "highlight": true, "emotion": "normal"},
+    "monika": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
+    "reiko": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
+    "yuki": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
+    "takeshi": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
+    "hana": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
+    "haru": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
+    "akira": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
+    "sensei": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
+    "yumi": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
+    "ryuu": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
+    "emi": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"}
+  }
 }
 
-ПРАВИЛА:
-- Всегда narrator_text (1 предложение)
-- speaker_text на русском
-- Говорящий персонаж: highlight=true
-- Можно показывать 1-3 персонажа
-- Меняй локации по сюжету""",
+ВАЖНО: location только из списка разрешённых. speaker_id только из списка разрешённых. Не выдумывай новые. Отвечай ТОЛЬКО JSON.""",
 
-        "first_scene_prompt": "{player_name} только что перевелся в Академию Сакура. Сегодня его первый день в классе 2-B. Опиши знакомство с одноклассниками."
+        "first_scene_prompt": "{player_name} просыпается утром первого учебного дня. По дороге в школу встречает одноклассников во дворе."
     }
 }
-
 
 def get_worlds_list():
     """Получить список доступных миров"""
@@ -474,15 +500,6 @@ def get_test_response():
 @app.route('/')
 def index():
     return render_template('index.html')
-
-
-@app.route('/game')
-def game_page():
-    session_id = request.args.get('session', '')
-    game = get_game(session_id)
-    if not game:
-        return "Игра не найдена. Начните новую игру!", 404
-    return render_template('game.html', game=game)
 
 
 @app.route('/static/images/<path:filename>')
