@@ -7,14 +7,13 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Загружаем .env (локально)
+# Загружаем .env
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Разрешаем CORS для мобильных запросов
+CORS(app)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
 
-# Увеличиваем таймаут для мобильных запросов
 import socket
 
 socket.setdefaulttimeout(60)
@@ -32,64 +31,74 @@ DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 STORAGE_FILE = 'games_storage.json'
 
-# Supabase
+# Supabase клиент
 supabase = None
-if SUPABASE_URL and SUPABASE_KEY and IS_PRODUCTION:
+if SUPABASE_URL and SUPABASE_KEY:
     try:
         from supabase import create_client
 
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("✅ Supabase подключен (Production)")
+        print("✅ Supabase подключен")
     except Exception as e:
         print(f"⚠️ Supabase error: {e}")
 
 # ============================================
-# БАЗА ДАННЫХ МИРА
+# WORLD SERVICE (Загрузка миров из Supabase или локально)
 # ============================================
-WORLD_DATABASE = {
-    "world_name": "Академия Сакура",
-    "setting": "Японская старшая школа, весна, цветение сакуры",
-    "atmosphere": "Тёплая, уютная, повседневная",
-    "main_storyline": "Главный герой переводится в новую школу",
 
-    "characters": {
-        "narrator": {
-            "id": "narrator", "name": "Рассказчик", "role": "narrator",
-            "personality": "Нейтральный повествователь",
-            "speaking_style": "Литературный, описательный",
-            "text_color": "#c0c0c0", "sprite": None
-        },
-        "garfild": {
-            "id": "garfild", "name": "Гарфилд", "role": "староста класса",
-            "personality": "Ответственный, добрый, немного занудный",
-            "speaking_style": "Вежливый, правильная речь",
-            "text_color": "#ff8c42", "emoji": "📋",
-            "sprite": "boy_test_garfild", "position": "left"
-        },
-        "monika": {
-            "id": "monika", "name": "Моника", "role": "президент клуба литературы",
-            "personality": "Харизматичная, загадочная, любит поэзию",
-            "speaking_style": "Элегантный, с цитатами",
-            "text_color": "#ff69b4", "emoji": "📚",
-            "sprite": "girl_test_monika", "position": "center"
-        },
-        "reiko": {
-            "id": "reiko", "name": "Рейко", "role": "спортсменка",
-            "personality": "Энергичная, весёлая, прямолинейная",
-            "speaking_style": "Эмоциональный, быстрый",
-            "text_color": "#00d4aa", "emoji": "🏃‍♀️",
-            "sprite": "girl_test_reiko", "position": "right"
-        }
-    },
+# Локальная БД миров (используется если Supabase недоступен)
+LOCAL_WORLDS = {
+    "academy_sakura": {
+        "world_name": "Академия Сакура",
+        "setting": "Японская старшая школа, весна, цветение сакуры",
+        "atmosphere": "Тёплая, уютная, повседневная",
+        "main_storyline": "Главный герой переводится в новую школу",
+        "genre": "school",
+        "description": "Школьная повседневность в японской старшей школе",
+        "image_url": "/static/images/worlds/school_preview.png",
 
-    "locations": {
-        "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный"},
-        "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на город", "mood": "Романтичный"},
-        "library": {"name": "Библиотека", "description": "Тихая библиотека", "mood": "Загадочный"},
-        "courtyard": {"name": "Школьный двор", "description": "Двор с сакурами", "mood": "Весенний"}
-    },
+        "characters": {
+            "narrator": {
+                "id": "narrator", "name": "Рассказчик", "role": "narrator",
+                "personality": "Нейтральный повествователь",
+                "speaking_style": "Литературный, описательный",
+                "text_color": "#c0c0c0", "sprite": None
+            },
+            "garfild": {
+                "id": "garfild", "name": "Гарфилд", "role": "староста класса",
+                "personality": "Ответственный, добрый, немного занудный",
+                "speaking_style": "Вежливый, правильная речь",
+                "text_color": "#ff8c42", "emoji": "📋",
+                "sprite": "boy_test_garfild", "position": "left"
+            },
+            "monika": {
+                "id": "monika", "name": "Моника", "role": "президент клуба литературы",
+                "personality": "Харизматичная, загадочная, любит поэзию",
+                "speaking_style": "Элегантный, с цитатами",
+                "text_color": "#ff69b4", "emoji": "📚",
+                "sprite": "girl_test_monika", "position": "center"
+            },
+            "reiko": {
+                "id": "reiko", "name": "Рейко", "role": "спортсменка",
+                "personality": "Энергичная, весёлая, прямолинейная",
+                "speaking_style": "Эмоциональный, быстрый",
+                "text_color": "#00d4aa", "emoji": "🏃‍♀️",
+                "sprite": "girl_test_reiko", "position": "right"
+            }
+        },
 
-    "rules_for_ai": """Ты - рассказчик в визуальной новелле "Академия Сакура". Жанр: повседневность, школа, романтика.
+        "locations": {
+            "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный",
+                          "bg_image": "bg_classroom"},
+            "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на город", "mood": "Романтичный",
+                        "bg_image": "bg_rooftop"},
+            "library": {"name": "Библиотека", "description": "Тихая библиотека", "mood": "Загадочный",
+                        "bg_image": "bg_library"},
+            "courtyard": {"name": "Школьный двор", "description": "Двор с сакурами", "mood": "Весенний",
+                          "bg_image": "bg_courtyard"}
+        },
+
+        "rules_for_ai": """Ты - рассказчик в визуальной новелле "Академия Сакура". Жанр: повседневность, школа, романтика.
 
 ОТВЕЧАЙ СТРОГО ТОЛЬКО JSON, БЕЗ ЛЮБОГО ТЕКСТА ДО И ПОСЛЕ.
 
@@ -113,12 +122,90 @@ WORLD_DATABASE = {
 - speaker_text на русском
 - Говорящий персонаж: highlight=true
 - Можно показывать 1-3 персонажа
-- Меняй локации по сюжету"""
+- Меняй локации по сюжету""",
+
+        "first_scene_prompt": "{player_name} только что перевелся в Академию Сакура. Сегодня его первый день в классе 2-B. Опиши знакомство с одноклассниками."
+    }
 }
 
 
+def get_worlds_list():
+    """Получить список доступных миров"""
+    if supabase and IS_PRODUCTION:
+        try:
+            result = supabase.table('worlds').select('*').eq('is_active', True).execute()
+            if result.data:
+                return result.data
+        except:
+            pass
+
+    # Локальный список
+    return [
+        {
+            'world_id': wid,
+            'name': data['world_name'],
+            'description': data.get('description', ''),
+            'genre': data.get('genre', ''),
+            'image_url': data.get('image_url', '')
+        }
+        for wid, data in LOCAL_WORLDS.items()
+    ]
+
+
+def get_world_data(world_id):
+    """Получить полные данные мира"""
+    if supabase and IS_PRODUCTION:
+        try:
+            # Пробуем загрузить из Supabase
+            world = supabase.table('worlds').select('*').eq('world_id', world_id).single().execute()
+            characters = supabase.table('world_characters').select('*').eq('world_id', world_id).execute()
+            locations = supabase.table('world_locations').select('*').eq('world_id', world_id).execute()
+            prompts = supabase.table('world_prompts').select('*').eq('world_id', world_id).single().execute()
+
+            if world.data:
+                # Собираем персонажей
+                chars_dict = {}
+                for char in (characters.data or []):
+                    chars_dict[char['char_id']] = {
+                        'id': char['char_id'],
+                        'name': char['name'],
+                        'role': char.get('role', ''),
+                        'personality': char.get('personality', ''),
+                        'speaking_style': char.get('speaking_style', ''),
+                        'text_color': char.get('text_color', '#fff'),
+                        'emoji': char.get('emoji', ''),
+                        'sprite': char.get('sprite_name'),
+                        'position': char.get('default_position', 'center')
+                    }
+
+                # Собираем локации
+                locs_dict = {}
+                for loc in (locations.data or []):
+                    locs_dict[loc['location_id']] = {
+                        'name': loc['name'],
+                        'description': loc.get('description', ''),
+                        'mood': loc.get('mood', ''),
+                        'bg_image': loc.get('bg_image', '')
+                    }
+
+                return {
+                    'world_name': world.data['name'],
+                    'setting': world.data.get('description', ''),
+                    'atmosphere': world.data.get('genre', ''),
+                    'characters': chars_dict,
+                    'locations': locs_dict,
+                    'rules_for_ai': prompts.data.get('system_prompt', '') if prompts.data else '',
+                    'first_scene_prompt': prompts.data.get('first_scene_prompt', '') if prompts.data else ''
+                }
+        except Exception as e:
+            print(f"⚠️ Ошибка загрузки мира из Supabase: {e}")
+
+    # Возвращаем локальный мир
+    return LOCAL_WORLDS.get(world_id, LOCAL_WORLDS['academy_sakura'])
+
+
 # ============================================
-# ХРАНИЛИЩЕ
+# ХРАНИЛИЩЕ ИГР
 # ============================================
 def load_games_local():
     if os.path.exists(STORAGE_FILE):
@@ -176,7 +263,7 @@ def save_game(game_data):
 
 
 # ============================================
-# DEEPSEEK API (с фиксом для мобильных)
+# DEEPSEEK API
 # ============================================
 def call_deepseek(messages, max_tokens=500):
     if not DEEPSEEK_API_KEY:
@@ -195,21 +282,14 @@ def call_deepseek(messages, max_tokens=500):
     }
 
     try:
-        # Увеличенный таймаут для мобильных
-        response = requests.post(
-            DEEPSEEK_API_URL,
-            headers=headers,
-            json=data,
-            timeout=45  # Увеличено для мобильных сетей
-        )
+        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=45)
         response.raise_for_status()
         result = response.json()
 
-        # Пробуем распарсить JSON из ответа
         content = result['choices'][0]['message']['content']
-
-        # Очищаем от возможных марккодовых блоков
         content = content.strip()
+
+        # Очистка от markdown
         if content.startswith('```json'):
             content = content[7:]
         if content.startswith('```'):
@@ -222,7 +302,7 @@ def call_deepseek(messages, max_tokens=500):
 
     except json.JSONDecodeError as e:
         print(f"❌ JSON Parse Error: {e}")
-        print(f"Raw content: {content[:200]}...")
+        print(f"Raw: {content[:200] if 'content' in dir() else 'N/A'}")
         return get_test_response()
     except requests.Timeout:
         print("❌ DeepSeek Timeout")
@@ -279,7 +359,7 @@ def get_test_response():
 
 
 # ============================================
-# МАРШРУТЫ
+# МАРШРУТЫ FLASK
 # ============================================
 
 @app.route('/')
@@ -292,7 +372,7 @@ def game_page():
     session_id = request.args.get('session', '')
     game = get_game(session_id)
     if not game:
-        return "Игра не найдена", 404
+        return "Игра не найдена. Начните новую игру!", 404
     return render_template('game.html', game=game)
 
 
@@ -301,23 +381,39 @@ def serve_image(filename):
     return send_from_directory('static/images', filename)
 
 
+@app.route('/api/worlds', methods=['GET'])
+def api_get_worlds():
+    """Получить список доступных миров"""
+    try:
+        worlds = get_worlds_list()
+        return jsonify({'success': True, 'worlds': worlds})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/create_game', methods=['POST'])
 def create_game():
+    """Создание новой игры"""
     try:
-        data = request.get_json(force=True)  # force=True для мобильных
+        data = request.get_json(force=True)
         character_name = data.get('character_name', '').strip()
-        world_name = data.get('world_name', 'Академия Сакура')
+        world_id = data.get('world_id', 'academy_sakura')
 
         if not character_name:
-            return jsonify({'success': False, 'error': 'Введи имя!'}), 400
+            return jsonify({'success': False, 'error': 'Введи имя персонажа!'}), 400
+
+        # Загружаем данные мира
+        world_db = get_world_data(world_id)
 
         session_id = datetime.now().strftime('%Y%m%d_%H%M%S') + '_' + uuid.uuid4().hex[:4]
 
-        # Первое сообщение
+        # Формируем первый промт
+        first_prompt = world_db.get('first_scene_prompt', 'Начинается новая игра.')
+        first_prompt = first_prompt.replace('{player_name}', character_name)
+
         initial_messages = [
-            {'role': 'system', 'content': WORLD_DATABASE['rules_for_ai']},
-            {'role': 'user',
-             'content': f'Новая игра. Игрок: {character_name}. Первый день в Академии Сакура, класс 2-B.'}
+            {'role': 'system', 'content': world_db.get('rules_for_ai', '')},
+            {'role': 'user', 'content': first_prompt}
         ]
 
         first_scene = call_deepseek(initial_messages)
@@ -327,15 +423,22 @@ def create_game():
 
         first_scene['type'] = 'scene'
 
+        # Определяем начальную локацию
+        default_location = first_scene.get('location', 'classroom')
+        if not default_location or default_location not in world_db.get('locations', {}):
+            locations = list(world_db.get('locations', {}).keys())
+            default_location = locations[0] if locations else 'classroom'
+
         game_data = {
             'session_id': session_id,
             'player_name': character_name,
-            'world_name': world_name,
+            'world_id': world_id,
             'created_at': datetime.now().isoformat(),
             'status': 'active',
-            'current_location': first_scene.get('location', 'classroom'),
+            'current_location': default_location,
             'game_history': [first_scene],
             'ai_context': {
+                'world_id': world_id,
                 'messages': initial_messages + [
                     {'role': 'assistant', 'content': json.dumps(first_scene, ensure_ascii=False)}
                 ]
@@ -343,7 +446,8 @@ def create_game():
         }
 
         save_game(game_data)
-        print(f"✅ Игра: {character_name} | {session_id} | {'Supabase' if IS_PRODUCTION else 'Local'}")
+
+        print(f"✅ Игра создана: {character_name} | Мир: {world_id} | ID: {session_id}")
 
         return jsonify({
             'success': True,
@@ -358,6 +462,7 @@ def create_game():
 
 @app.route('/api/game_action', methods=['POST'])
 def game_action():
+    """Обработка действия игрока"""
     try:
         data = request.get_json(force=True)
         session_id = data.get('session_id')
@@ -367,10 +472,10 @@ def game_action():
         if not game:
             return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
 
-        # Добавляем действие
+        # Добавляем действие игрока
         game['ai_context']['messages'].append({
             'role': 'user',
-            'content': f'Действие: {player_action}'
+            'content': f'Действие игрока: {player_action}'
         })
 
         game['game_history'].append({
@@ -378,7 +483,7 @@ def game_action():
             'player_text': player_action
         })
 
-        # Ответ от AI
+        # Получаем ответ от AI
         scene = call_deepseek(game['ai_context']['messages'])
 
         if not scene:
@@ -410,32 +515,43 @@ def game_action():
 
 @app.route('/api/load_game_data')
 def load_game_data():
+    """Загрузка данных игры"""
     session_id = request.args.get('session', '')
     game = get_game(session_id)
 
     if not game:
         return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
 
+    # Загружаем мир
+    world_id = game.get('world_id', 'academy_sakura')
+    world_db = get_world_data(world_id)
+
+    current_loc = game.get('current_location', 'classroom')
+    location_name = world_db.get('locations', {}).get(current_loc, {}).get('name', 'Локация')
+
     return jsonify({
         'success': True,
         'game': {
             'session_id': game['session_id'],
             'player_name': game['player_name'],
-            'world_name': game['world_name'],
-            'current_location': game['current_location'],
-            'location_name': WORLD_DATABASE['locations'].get(game['current_location'], {}).get('name', 'Класс'),
-            'game_history': game['game_history']
+            'world_id': world_id,
+            'current_location': current_loc,
+            'location_name': location_name,
+            'game_history': game.get('game_history', [])
         }
     })
 
 
 @app.route('/api/health')
 def health():
+    """Проверка состояния сервера"""
     return jsonify({
         'status': 'ok',
         'mode': 'production' if IS_PRODUCTION else 'local',
         'storage': 'supabase' if (IS_PRODUCTION and supabase) else 'json',
         'api': bool(DEEPSEEK_API_KEY),
+        'supabase': bool(supabase),
+        'worlds_available': len(get_worlds_list()),
         'timestamp': datetime.now().isoformat()
     })
 
@@ -444,13 +560,17 @@ def health():
 # ЗАПУСК
 # ============================================
 if __name__ == '__main__':
-    print("=" * 50)
-    print("🎮 RP Future - Академия Сакура")
-    print("=" * 50)
-    print(f"🔧 Режим: {'PRODUCTION' if IS_PRODUCTION else 'LOCAL'}")
-    print(f"💾 Хранение: {'Supabase' if (IS_PRODUCTION and supabase) else 'JSON'}")
-    print(f"🔑 API: {'✅' if DEEPSEEK_API_KEY else '⚠️ Тест'}")
-    print("=" * 50)
+    print("=" * 60)
+    print("🎮 RP Future - Мульти-мировая новелла")
+    print("=" * 60)
+    print(f"🔧 Режим: {'PRODUCTION (Render)' if IS_PRODUCTION else 'LOCAL'}")
+    print(f"💾 Хранилище: {'Supabase' if (IS_PRODUCTION and supabase) else 'JSON файл'}")
+    print(f"🔑 DeepSeek API: {'✅ Подключен' if DEEPSEEK_API_KEY else '⚠️ Тестовый режим'}")
+    print(f"🌍 Миров доступно: {len(get_worlds_list())}")
+    print("=" * 60)
+    print("🌐 http://localhost:5000")
+    print("📝 Ctrl+C для остановки")
+    print("=" * 60)
 
     port = int(os.getenv('PORT', 5000))
     debug = not IS_PRODUCTION

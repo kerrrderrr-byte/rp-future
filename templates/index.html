@@ -5,74 +5,506 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RP Future - Генеративная новелла</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Philosopher:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comfortaa', cursive;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Основной контейнер */
+        .container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+            animation: slideIn 1s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        h1 {
+            font-family: 'Philosopher', sans-serif;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 35px;
+            font-size: 0.9em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .decorative-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent);
+            margin: 25px 0;
+        }
+
+        /* Кнопки */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .anime-button {
+            position: relative;
+            padding: 15px 40px;
+            font-family: 'Comfortaa', cursive;
+            font-size: 1em;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: white;
+            width: 100%;
+        }
+
+        .anime-button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 8px 25px rgba(107, 79, 160, 0.25);
+        }
+
+        .anime-button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.25);
+        }
+
+        .anime-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(107, 79, 160, 0.35);
+        }
+
+        .anime-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Статус */
+        #status {
+            margin-top: 25px;
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: rgba(76, 175, 80, 0.08);
+            color: #4caf50;
+            font-weight: 600;
+            font-size: 0.85em;
+            display: inline-block;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlide 0.5s ease;
+            margin: 20px;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h2 {
+            color: #6b4fa0;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #764ba2;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .label-icon {
+            margin-right: 5px;
+        }
+
+        .anime-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0d5f5;
+            border-radius: 25px;
+            font-family: 'Comfortaa', cursive;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            outline: none;
+            background: #fafafa;
+        }
+
+        .anime-input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(118, 75, 162, 0.2);
+            background: white;
+        }
+
+        select.anime-input {
+            appearance: auto;
+            cursor: pointer;
+        }
+
+        .input-hint {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 5px;
+            padding-left: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .modal-buttons .anime-button {
+            flex: 1;
+        }
+
+        .world-preview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 15px;
+            margin-top: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .world-preview-icon {
+            font-size: 2em;
+        }
+
+        .world-preview-info {
+            flex: 1;
+        }
+
+        .world-preview-name {
+            font-weight: 700;
+            color: #6b4fa0;
+        }
+
+        .world-preview-desc {
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100px); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .modal-content {
+                padding: 30px 25px;
+                margin: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Основной контейнер -->
     <div class="container">
         <h1>Приветствуем в RP Future</h1>
         <div class="subtitle">✦ Генеративная новелла с ИИ ✦</div>
 
-        <button class="anime-button primary" onclick="openNewGameModal()">
-            ✦ Начать новую игру ✦
-        </button>
-        <br>
-        <button class="anime-button secondary" onclick="continueGame()">
-            ♥ Продолжить игру ♥
-        </button>
+        <div class="decorative-line"></div>
+
+        <div class="button-container">
+            <button class="anime-button primary" onclick="openNewGameModal()">
+                ✦ Начать новую игру ✦
+            </button>
+
+            <button class="anime-button secondary" onclick="continueGame()">
+                ♥ Продолжить игру ♥
+            </button>
+        </div>
+
+        <div class="decorative-line"></div>
 
         <div id="status">
             🟢 Сервер работает
         </div>
     </div>
 
-    <!-- Модальное окно -->
+    <!-- Модальное окно для новой игры -->
     <div id="newGameModal" class="modal">
         <div class="modal-content">
             <h2>✨ Создание персонажа ✨</h2>
 
-            <label>👤 Имя персонажа:</label>
-            <input type="text" id="characterName" class="anime-input" placeholder="Введите имя героя...">
+            <div class="input-group">
+                <label for="characterName">
+                    <span class="label-icon">👤</span>
+                    Имя персонажа:
+                </label>
+                <input type="text"
+                       id="characterName"
+                       class="anime-input"
+                       placeholder="Введите имя героя..."
+                       maxlength="50"
+                       autocomplete="off">
+                <div class="input-hint">Например: Юки, Харуки, Сакура...</div>
+            </div>
 
-            <label>🌍 Название мира:</label>
-            <input type="text" id="worldName" class="anime-input" placeholder="Введите название мира...">
+            <div class="input-group">
+                <label for="worldSelect">
+                    <span class="label-icon">🌍</span>
+                    Выбери мир:
+                </label>
+                <select id="worldSelect" class="anime-input" onchange="updateWorldPreview()">
+                    <option value="">Загрузка миров...</option>
+                </select>
+                <div class="world-preview" id="worldPreview" style="display:none;">
+                    <div class="world-preview-icon" id="worldPreviewIcon">🏫</div>
+                    <div class="world-preview-info">
+                        <div class="world-preview-name" id="worldPreviewName"></div>
+                        <div class="world-preview-desc" id="worldPreviewDesc"></div>
+                    </div>
+                </div>
+            </div>
 
-            <br><br>
-            <button class="anime-button primary" onclick="startNewGame()">
-                ✦ Начать приключение ✦
-            </button>
-            <button class="anime-button secondary" onclick="closeNewGameModal()" style="background: #999;">
-                ✕ Отмена
-            </button>
+            <div class="modal-buttons">
+                <button class="anime-button primary" onclick="startNewGame()">
+                    ✦ Начать приключение ✦
+                </button>
+                <button class="anime-button secondary" onclick="closeNewGameModal()">
+                    ✕ Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для загрузки игры -->
+    <div id="loadGameModal" class="modal">
+        <div class="modal-content">
+            <h2>📜 Загрузить игру</h2>
+
+            <div id="sessionsList" class="sessions-list">
+                <div class="loading">Загрузка сохранений...</div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="anime-button secondary" onclick="closeLoadGameModal()">
+                    ✕ Закрыть
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        const API_BASE_URL = window.location.origin;
+        let availableWorlds = [];
+
+        // ==================== МОДАЛЬНЫЕ ОКНА ====================
         function openNewGameModal() {
             document.getElementById('newGameModal').style.display = 'flex';
             document.getElementById('characterName').focus();
+            loadWorlds();
         }
 
         function closeNewGameModal() {
             document.getElementById('newGameModal').style.display = 'none';
             document.getElementById('characterName').value = '';
-            document.getElementById('worldName').value = '';
+            document.getElementById('worldSelect').value = '';
+            document.getElementById('worldPreview').style.display = 'none';
         }
 
-         async function startNewGame() {
-            const characterName = document.getElementById('characterName').value.trim();
-            const worldName = document.getElementById('worldName').value.trim();
+        function openLoadGameModal() {
+            document.getElementById('loadGameModal').style.display = 'flex';
+            loadSavedSessions();
+        }
 
-            if (!characterName || !worldName) {
-                alert('Пожалуйста, заполни все поля!');
+        function closeLoadGameModal() {
+            document.getElementById('loadGameModal').style.display = 'none';
+        }
+
+        // ==================== ЗАГРУЗКА МИРОВ ====================
+        async function loadWorlds() {
+            const select = document.getElementById('worldSelect');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/worlds`);
+                const data = await response.json();
+
+                if (data.success && data.worlds && data.worlds.length > 0) {
+                    availableWorlds = data.worlds;
+
+                    select.innerHTML = data.worlds.map(world =>
+                        `<option value="${world.world_id}">${world.name} — ${world.genre || 'приключение'}</option>`
+                    ).join('');
+
+                    updateWorldPreview();
+                } else {
+                    select.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>';
+                    updateWorldPreview();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки миров:', error);
+                select.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>';
+                updateWorldPreview();
+            }
+        }
+
+        function updateWorldPreview() {
+            const select = document.getElementById('worldSelect');
+            const preview = document.getElementById('worldPreview');
+            const worldId = select.value;
+
+            if (!worldId || !availableWorlds.length) {
+                preview.style.display = 'none';
                 return;
             }
 
+            const world = availableWorlds.find(w => w.world_id === worldId);
+
+            if (world) {
+                preview.style.display = 'flex';
+                document.getElementById('worldPreviewName').textContent = world.name;
+                document.getElementById('worldPreviewDesc').textContent = world.description || '';
+
+                // Иконка по жанру
+                const icons = {
+                    'school': '🏫',
+                    'cyberpunk': '🌃',
+                    'fantasy': '🏰',
+                    'scifi': '🚀'
+                };
+                document.getElementById('worldPreviewIcon').textContent =
+                    icons[world.genre] || '🌍';
+            }
+        }
+
+        // ==================== НАЧАТЬ НОВУЮ ИГРУ ====================
+        async function startNewGame() {
+            const characterName = document.getElementById('characterName').value.trim();
+            const worldSelect = document.getElementById('worldSelect');
+            const worldId = worldSelect.value || 'academy_sakura';
+
+            if (!characterName) {
+                showNotification('Пожалуйста, введи имя персонажа!', 'error');
+                document.getElementById('characterName').focus();
+                return;
+            }
+
+            const button = document.querySelector('#newGameModal .anime-button.primary');
+            button.disabled = true;
+            button.textContent = '⏳ Создаём...';
+
             try {
-                const response = await fetch('/api/create_game', {
+                const response = await fetch(`${API_BASE_URL}/api/create_game`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         character_name: characterName,
-                        world_name: worldName
+                        world_id: worldId
                     })
                 });
 
@@ -80,47 +512,137 @@
 
                 if (data.success) {
                     localStorage.setItem('currentSessionId', data.session_id);
-                    // Прямой переход на страницу игры
-                    window.location.href = data.redirect;
+                    localStorage.setItem('currentCharacterName', characterName);
+                    localStorage.setItem('currentWorldId', worldId);
+
+                    closeNewGameModal();
+                    showNotification('✨ Приключение начинается!', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 800);
                 } else {
-                    alert('Ошибка: ' + data.error);
+                    showNotification(data.error || 'Ошибка при создании игры', 'error');
+                    button.disabled = false;
+                    button.textContent = '✦ Начать приключение ✦';
                 }
             } catch (error) {
-                alert('Ошибка соединения с сервером');
+                console.error('Ошибка:', error);
+                showNotification('Ошибка соединения с сервером', 'error');
+                button.disabled = false;
+                button.textContent = '✦ Начать приключение ✦';
             }
         }
 
+        // ==================== ПРОДОЛЖИТЬ ИГРУ ====================
         async function continueGame() {
             const sessionId = localStorage.getItem('currentSessionId');
 
-            if (!sessionId) {
-                alert('Нет сохраненных игр. Начни новую игру!');
-                return;
-            }
+            if (sessionId) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/load_game_data?session=${sessionId}`);
+                    const data = await response.json();
 
-            try {
-                const response = await fetch('/api/load_game', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({session_id: sessionId})
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert('Игра не найдена. Начни новую!');
-                    localStorage.removeItem('currentSessionId');
+                    if (data.success) {
+                        showNotification('👋 С возвращением!', 'success');
+                        setTimeout(() => {
+                            window.location.href = `/game?session=${sessionId}`;
+                        }, 800);
+                    } else {
+                        localStorage.removeItem('currentSessionId');
+                        openLoadGameModal();
+                    }
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    openLoadGameModal();
                 }
-            } catch (error) {
-                alert('Ошибка соединения');
+            } else {
+                showNotification('Нет сохранённых игр. Начни новую!', 'error');
             }
         }
 
-        // Закрытие по клику вне окна
+        // ==================== ЗАГРУЗКА СОХРАНЕНИЙ ====================
+        async function loadSavedSessions() {
+            const sessionsList = document.getElementById('sessionsList');
+            sessionsList.innerHTML = '<div class="loading">Загрузка сохранений...</div>';
+
+            // Показываем только локальные сохранения
+            const sessionId = localStorage.getItem('currentSessionId');
+            const characterName = localStorage.getItem('currentCharacterName');
+            const worldId = localStorage.getItem('currentWorldId');
+
+            if (sessionId) {
+                sessionsList.innerHTML = `
+                    <div class="session-item" onclick="loadSession('${sessionId}')">
+                        <div class="session-info">
+                            <div class="session-character">👤 ${characterName || 'Персонаж'}</div>
+                            <div class="session-world">🌍 Мир: ${worldId || 'unknown'}</div>
+                            <div class="session-date">📅 Последняя игра</div>
+                        </div>
+                        <div class="session-status">🟢 active</div>
+                    </div>
+                `;
+            } else {
+                sessionsList.innerHTML = '<div class="no-sessions">😢 Нет сохранённых игр</div>';
+            }
+        }
+
+        async function loadSession(sessionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/load_game_data?session=${sessionId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    closeLoadGameModal();
+                    showNotification('👋 С возвращением!', 'success');
+                    setTimeout(() => {
+                        window.location.href = `/game?session=${sessionId}`;
+                    }, 800);
+                } else {
+                    showNotification('Игра не найдена', 'error');
+                    localStorage.removeItem('currentSessionId');
+                }
+            } catch (error) {
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        // ==================== УВЕДОМЛЕНИЯ ====================
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // ==================== ПРОВЕРКА СТАТУСА ====================
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+
+                const statusEl = document.getElementById('status');
+                if (data.status === 'ok') {
+                    statusEl.innerHTML = '🟢 Сервер онлайн';
+                    if (data.api) {
+                        statusEl.innerHTML += ' | 🤖 AI готов';
+                    }
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '🔴 Сервер офлайн';
+            }
+        }
+
+        // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+
+        // Закрытие модальных окон по клику вне
         window.onclick = function(event) {
-            if (event.target.className === 'modal') {
+            if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
             }
         }
@@ -128,8 +650,28 @@
         // Закрытие по Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                closeNewGameModal();
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
             }
+            // Enter для отправки формы
+            if (e.key === 'Enter' && document.getElementById('newGameModal').style.display === 'flex') {
+                e.preventDefault();
+                startNewGame();
+            }
+        });
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+
+            // Проверяем сохранённую игру
+            const savedSession = localStorage.getItem('currentSessionId');
+            if (savedSession) {
+                console.log('🎮 Найдена сохранённая игра:', savedSession);
+            }
+
+            console.log('🎮 RP Future - Главная страница загружена');
         });
     </script>
 </body>
