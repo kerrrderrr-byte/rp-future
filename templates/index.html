@@ -80,7 +80,7 @@
 
                 if (data.success) {
                     localStorage.setItem('currentSessionId', data.session_id);
-                    // Редирект на игровую страницу
+                    // Прямой переход на страницу игры
                     window.location.href = data.redirect;
                 } else {
                     alert('Ошибка: ' + data.error);

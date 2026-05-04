@@ -16,3 +16,7 @@ services:
         value: "true"
       - key: PRODUCTION
         value: "true"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /*
