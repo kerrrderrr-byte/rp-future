@@ -555,37 +555,25 @@
         let currentScene = null;
         let isTyping = false;
         let typingTimeout = null;
+        let waitingForInput = true;  // Флаг ожидания ввода
         const sessionId = new URLSearchParams(window.location.search).get('session');
 
         const TYPING_SPEED = 40;
         const FAST_TYPING_SPEED = 12;
 
-        // Эмоции → эмодзи
         const EMOTION_ICONS = {
-            'радость': '😊',
-            'грусть': '😢',
-            'злость': '😠',
-            'удивление': '😲',
-            'нейтрально': '😐',
-            'смущение': '😳',
-            'восторг': '🤩',
-            'happy': '😊',
-            'sad': '😢',
-            'angry': '😠',
-            'surprised': '😲',
-            'normal': '😐',
-            'excited': '🤩',
-            'serious': '🧐'
+            'радость': '😊', 'грусть': '😢', 'злость': '😠',
+            'удивление': '😲', 'нейтрально': '😐', 'смущение': '😳',
+            'восторг': '🤩', 'happy': '😊', 'sad': '😢',
+            'angry': '😠', 'surprised': '😲', 'normal': '😐',
+            'excited': '🤩', 'serious': '🧐'
         };
 
-        // ==================== ФУНКЦИИ УПРАВЛЕНИЯ СПРАЙТАМИ ====================
-
+        // ==================== ФУНКЦИИ СПРАЙТОВ ====================
         function updateSprites(sprites) {
             if (!sprites) return;
 
-            const characters = ['garfild', 'monika', 'reiko'];
-
-            characters.forEach(charId => {
+            Object.keys(sprites).forEach(charId => {
                 const sprite = document.getElementById(`sprite-${charId}`);
                 const emotion = document.getElementById(`emotion-${charId}`);
                 const config = sprites[charId];
@@ -593,32 +581,16 @@
                 if (!sprite) return;
 
                 if (config && config.visible) {
-                    // Показываем спрайт
                     sprite.classList.add('visible');
-
-                    // Подсветка говорящего
                     if (config.highlight) {
                         sprite.classList.add('highlighted');
                     } else {
                         sprite.classList.remove('highlighted');
                     }
-
-                    // Эмоция
                     if (emotion && config.emotion) {
                         emotion.textContent = EMOTION_ICONS[config.emotion] || '😐';
                     }
-
-                    // Позиция
-                    if (config.position === 'left') {
-                        sprite.style.order = '1';
-                    } else if (config.position === 'center') {
-                        sprite.style.order = '2';
-                    } else if (config.position === 'right') {
-                        sprite.style.order = '3';
-                    }
-
                 } else {
-                    // Скрываем спрайт
                     sprite.classList.remove('visible', 'highlighted');
                     if (emotion) emotion.textContent = '';
                 }
@@ -629,56 +601,28 @@
             const bg = document.getElementById('sceneBackground');
             const petals = document.getElementById('sakuraPetals');
 
-            // Убираем все классы
             bg.className = 'scene-background';
             petals.classList.remove('active');
 
-            // Добавляем нужный класс фона
-            switch(location) {
-                case 'classroom':
-                    bg.classList.add('bg-classroom');
-                    break;
-                case 'rooftop':
-                    bg.classList.add('bg-rooftop');
-                    break;
-                case 'library':
-                    bg.classList.add('bg-library');
-                    break;
-                case 'courtyard':
-                    bg.classList.add('bg-courtyard');
-                    petals.classList.add('active');
-                    break;
-                default:
-                    bg.classList.add('bg-classroom');
-            }
-        }
+            const bgClasses = {
+                'classroom': 'bg-classroom',
+                'rooftop': 'bg-rooftop',
+                'library': 'bg-library',
+                'courtyard': 'bg-courtyard'
+            };
 
-        function preloadBackgrounds() {
-            const locations = ['classroom', 'rooftop', 'library', 'courtyard'];
-            locations.forEach(loc => {
-                const img = new Image();
-                img.src = `/static/images/backgrounds/bg_${loc}.png`;
-            });
-        }
-
-        function createSakuraPetals() {
-            const container = document.getElementById('sakuraPetals');
-            for (let i = 0; i < 20; i++) {
-                const petal = document.createElement('div');
-                petal.className = 'petal';
-                petal.style.left = Math.random() * 100 + '%';
-                petal.style.animationDelay = Math.random() * 8 + 's';
-                petal.style.animationDuration = (Math.random() * 6 + 6) + 's';
-                container.appendChild(petal);
+            if (bgClasses[location]) {
+                bg.classList.add(bgClasses[location]);
+                if (location === 'courtyard') petals.classList.add('active');
+            } else {
+                bg.classList.add('bg-classroom');
             }
         }
 
         // ==================== ФУНКЦИИ ТЕКСТА ====================
-
         async function loadGame() {
             if (!sessionId) {
-                document.getElementById('dialogueText').innerHTML =
-                    '<span style="color: #ff6b6b;">Ошибка: нет ID сессии</span>';
+                document.getElementById('typingText').textContent = 'Ошибка: нет ID сессии';
                 return;
             }
 
@@ -699,10 +643,13 @@
                         await displayScene(lastScene);
                     }
 
+                    waitingForInput = true;
                     enableInput();
                 }
             } catch (error) {
                 console.error('Ошибка загрузки:', error);
+                document.getElementById('typingText').textContent = 'Ошибка загрузки игры';
+                enableInput();
             }
         }
 
@@ -731,7 +678,6 @@
                     } else {
                         cursor.style.display = 'none';
                         isTyping = false;
-                        enableInput();
                         resolve();
                     }
                 }
@@ -749,11 +695,10 @@
                 if (currentScene) {
                     typingText.textContent = currentScene.type === 'player_action' ?
                         '🗣️ ' + currentScene.player_text :
-                        currentScene.speaker_text;
+                        (currentScene.speaker_text || '');
                 }
 
                 document.getElementById('typingCursor').style.display = 'none';
-                enableInput();
             }
         }
 
@@ -766,14 +711,17 @@
             const narratorEl = document.getElementById('narratorText');
             narratorEl.textContent = '';
 
+            const typingEl = document.getElementById('typingText');
+            typingEl.textContent = '';
+
             disableInput();
 
             if (scene.type === 'player_action') {
-                narratorEl.textContent = '';
-                const typingEl = document.getElementById('typingText');
+                // Показываем действие игрока
                 typingEl.style.color = '#FFB6C1';
                 document.getElementById('typingCursor').style.display = 'inline-block';
                 await typeText(typingEl, '🗣️ ' + scene.player_text, FAST_TYPING_SPEED);
+                enableInput();
 
             } else {
                 // Обновляем спрайты
@@ -800,35 +748,34 @@
                 }
 
                 // Имя говорящего
-                if (scene.speaker_id && scene.speaker_id !== 'narrator') {
+                const speakerId = scene.speaker_id || 'narrator';
+
+                if (speakerId !== 'narrator') {
                     nameBox.style.display = 'block';
                     const nameEl = document.getElementById('speakerName');
-                    nameEl.textContent = scene.speaker_name;
+                    nameEl.textContent = scene.speaker_name || 'Персонаж';
 
                     const colors = {
                         'garfild': '#ff8c42',
                         'monika': '#ff69b4',
                         'reiko': '#00d4aa'
                     };
-                    const bgColor = colors[scene.speaker_id] || '#FFB6C1';
+                    const bgColor = colors[speakerId] || '#FFB6C1';
                     nameEl.style.background = bgColor;
                     nameEl.style.color = '#000';
                     nameEl.style.boxShadow = `0 4px 15px ${bgColor}44`;
                 }
 
-                // Печатаем речь
-                const typingEl = document.getElementById('typingText');
-                typingEl.style.color = '#ffffff';
+                // Печатаем текст
+                const textToType = scene.speaker_text || '...';
+                typingEl.style.color = speakerId === 'narrator' ? '#c0c0c0' : '#ffffff';
                 document.getElementById('typingCursor').style.display = 'inline-block';
 
-                if (scene.speaker_id === 'narrator') {
-                    narratorEl.textContent = scene.speaker_text;
-                    document.getElementById('typingCursor').style.display = 'none';
-                    enableInput();
-                    return;
-                }
+                await typeText(typingEl, textToType);
 
-                await typeText(typingEl, scene.speaker_text);
+                // После печати включаем ввод
+                waitingForInput = true;
+                enableInput();
             }
         }
 
@@ -837,7 +784,14 @@
             const button = document.getElementById('sendButton');
             input.disabled = false;
             button.disabled = false;
-            input.focus();
+            waitingForInput = true;
+
+            // Фокус с небольшой задержкой
+            setTimeout(() => {
+                if (!isTyping) {
+                    input.focus();
+                }
+            }, 100);
         }
 
         function disableInput() {
@@ -845,51 +799,88 @@
             const button = document.getElementById('sendButton');
             input.disabled = true;
             button.disabled = true;
+            waitingForInput = false;
         }
 
         async function sendAction() {
+            // Если печатает - пропускаем
             if (isTyping) {
                 skipTyping();
+                // После скипа включаем ввод
+                setTimeout(() => enableInput(), 50);
+                return;
+            }
+
+            if (!waitingForInput) {
                 return;
             }
 
             const input = document.getElementById('playerInput');
             const action = input.value.trim();
 
-            if (!action) return;
+            if (!action) {
+                input.focus();
+                return;
+            }
 
             input.value = '';
             disableInput();
 
+            // Показываем действие игрока
             await displayScene({ type: 'player_action', player_text: action });
 
+            // Отправляем на сервер
             try {
                 const response = await fetch('/api/game_action', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, action: action })
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        action: action
+                    })
                 });
 
                 const data = await response.json();
 
-                if (data.success) {
-                    await new Promise(r => setTimeout(r, 600));
+                if (data.success && data.scene) {
+                    // Пауза перед ответом NPC
+                    await new Promise(r => setTimeout(r, 500));
                     await displayScene(data.scene);
+                } else if (data.error) {
+                    document.getElementById('typingText').textContent = '⚠️ ' + data.error;
+                    enableInput();
+                } else {
+                    // Тестовый ответ если нет сцены
+                    await new Promise(r => setTimeout(r, 300));
+                    await displayScene({
+                        type: 'scene',
+                        speaker_id: 'monika',
+                        speaker_name: 'Моника',
+                        speaker_text: 'Интересно... Расскажи подробнее!',
+                        narrator_text: 'Моника внимательно слушает.',
+                        emotion: 'happy',
+                        location: gameData ? gameData.current_location : 'classroom',
+                        sprites: {
+                            garfild: {visible: false, position: 'left', highlight: false, emotion: 'normal'},
+                            monika: {visible: true, position: 'center', highlight: true, emotion: 'happy'},
+                            reiko: {visible: false, position: 'right', highlight: false, emotion: 'normal'}
+                        }
+                    });
                 }
             } catch (error) {
-                console.error('Ошибка:', error);
+                console.error('Ошибка отправки:', error);
+                document.getElementById('typingText').textContent = '⚠️ Ошибка соединения. Попробуй снова.';
                 enableInput();
             }
         }
 
         function showHistory() {
-            if (!gameData) return;
+            if (!gameData || !gameData.game_history) return;
             console.log('📜 История игры:', gameData.game_history);
-            alert(`В истории ${gameData.game_history.length} событий.\nКонсоль (F12) для деталей.`);
+            alert(`В истории ${gameData.game_history.length} событий.`);
         }
 
         // ==================== ОБРАБОТЧИКИ ====================
-
         document.getElementById('playerInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -900,6 +891,7 @@
         document.querySelector('.text-box-container').addEventListener('click', function(e) {
             if (isTyping && e.target !== document.getElementById('playerInput')) {
                 skipTyping();
+                setTimeout(() => enableInput(), 50);
             }
         });
 
@@ -907,14 +899,33 @@
             if (e.key === ' ' && isTyping && document.activeElement !== document.getElementById('playerInput')) {
                 e.preventDefault();
                 skipTyping();
+                setTimeout(() => enableInput(), 50);
             }
         });
 
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         window.addEventListener('DOMContentLoaded', function() {
-            createSakuraPetals();
-            preloadBackgrounds();
+            console.log('🎮 RP Future - Загрузка игры...');
+            console.log('📱 Session ID:', sessionId);
+
+            // Предзагрузка фонов
+            ['classroom', 'rooftop', 'library', 'courtyard'].forEach(loc => {
+                const img = new Image();
+                img.src = `/static/images/backgrounds/bg_${loc}.png`;
+            });
+
             loadGame();
+
+            // Фокус на ввод при клике в любом месте
+            document.addEventListener('click', function(e) {
+                const input = document.getElementById('playerInput');
+                if (!isTyping && waitingForInput &&
+                    e.target !== input &&
+                    !e.target.classList.contains('send-button') &&
+                    !e.target.classList.contains('history-button')) {
+                    input.focus();
+                }
+            });
         });
     </script>
 </body>
