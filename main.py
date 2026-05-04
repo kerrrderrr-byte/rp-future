@@ -57,7 +57,7 @@ LOCAL_WORLDS = {
         "description": "Школьная повседневность в японской старшей школе",
         "image_url": "/static/images/worlds/school_preview.png",
 
-        "characters": {
+                "characters": {
             "narrator": {
                 "id": "narrator", "name": "Рассказчик", "role": "narrator",
                 "personality": "Нейтральный повествователь",
@@ -66,37 +66,107 @@ LOCAL_WORLDS = {
             },
             "garfild": {
                 "id": "garfild", "name": "Гарфилд", "role": "староста класса",
-                "personality": "Ответственный, добрый, немного занудный",
+                "personality": "Ответственный перфекционист, тайно пишет стихи",
                 "speaking_style": "Вежливый, правильная речь",
                 "text_color": "#ff8c42", "emoji": "📋",
-                "sprite": "boy_test_garfild", "position": "left"
+                "sprite": "boy_garfild", "position": "left"
             },
             "monika": {
                 "id": "monika", "name": "Моника", "role": "президент клуба литературы",
-                "personality": "Харизматичная, загадочная, любит поэзию",
+                "personality": "Харизматичная, загадочная, скрывает одиночество",
                 "speaking_style": "Элегантный, с цитатами",
                 "text_color": "#ff69b4", "emoji": "📚",
-                "sprite": "girl_test_monika", "position": "center"
+                "sprite": "girl_monika", "position": "center"
             },
             "reiko": {
                 "id": "reiko", "name": "Рейко", "role": "спортсменка",
-                "personality": "Энергичная, весёлая, прямолинейная",
+                "personality": "Энергичная, весёлая, боится потерять стипендию из-за травмы",
                 "speaking_style": "Эмоциональный, быстрый",
                 "text_color": "#00d4aa", "emoji": "🏃‍♀️",
-                "sprite": "girl_test_reiko", "position": "right"
+                "sprite": "girl_reiko", "position": "right"
+            },
+            "yuki": {
+                "id": "yuki", "name": "Юки", "role": "тихая художница",
+                "personality": "Застенчивая, говорит через искусство",
+                "speaking_style": "Тихий, с паузами",
+                "text_color": "#b8a9d4", "emoji": "🎨",
+                "sprite": "girl_yuki", "position": "left"
+            },
+            "takeshi": {
+                "id": "takeshi", "name": "Такеши", "role": "хулиган с золотым сердцем",
+                "personality": "Грубый снаружи, защищает слабых",
+                "speaking_style": "Грубоватый, но искренний",
+                "text_color": "#ff4444", "emoji": "👊",
+                "sprite": "boy_takeshi", "position": "right"
+            },
+            "hana": {
+                "id": "hana", "name": "Хана", "role": "президент студсовета",
+                "personality": "Идеальная, соперничает с Моникой, тайно влюблена в Гарфилда",
+                "speaking_style": "Формальный, холодный",
+                "text_color": "#4da6ff", "emoji": "👑",
+                "sprite": "girl_hana", "position": "center"
+            },
+            "haru": {
+                "id": "haru", "name": "Хару", "role": "лучший друг-весельчак",
+                "personality": "Шутник, но очень наблюдательный",
+                "speaking_style": "Шутливый, с прибаутками",
+                "text_color": "#ffd700", "emoji": "😄",
+                "sprite": "boy_haru", "position": "left"
+            },
+            "akira": {
+                "id": "akira", "name": "Акира", "role": "геймер и программист",
+                "personality": "Интроверт, создаёт игры",
+                "speaking_style": "Технический, с IT-терминами",
+                "text_color": "#7cfc00", "emoji": "💻",
+                "sprite": "boy_akira", "position": "right"
+            },
+            "sensei": {
+                "id": "sensei", "name": "Танака-сенсей", "role": "классный руководитель",
+                "personality": "Мудрый, понимающий, сам пишет роман",
+                "speaking_style": "Учительский, с советами",
+                "text_color": "#deb887", "emoji": "👨‍🏫",
+                "sprite": "boy_sensei", "position": "center"
+            },
+            "yumi": {
+                "id": "yumi", "name": "Юми", "role": "школьная медсестра",
+                "personality": "Добрая, заботливая, в прошлом байкер",
+                "speaking_style": "Мягкий, успокаивающий",
+                "text_color": "#ff9999", "emoji": "💉",
+                "sprite": "girl_yumi", "position": "left"
+            },
+            "ryuu": {
+                "id": "ryuu", "name": "Рю", "role": "капитан клуба кендо",
+                "personality": "Молчаливый, дисциплинированный",
+                "speaking_style": "Краткий, афоризмами",
+                "text_color": "#808080", "emoji": "⚔️",
+                "sprite": "boy_ryuu", "position": "right"
+            },
+            "emi": {
+                "id": "emi", "name": "Эми", "role": "журналист школьной газеты",
+                "personality": "Любопытная, везде ищет сенсации",
+                "speaking_style": "Быстрый, с вопросами",
+                "text_color": "#ff1493", "emoji": "📰",
+                "sprite": "girl_emi", "position": "center"
             }
         },
 
-        "locations": {
-            "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный",
-                          "bg_image": "bg_classroom"},
-            "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на город", "mood": "Романтичный",
-                        "bg_image": "bg_rooftop"},
-            "library": {"name": "Библиотека", "description": "Тихая библиотека", "mood": "Загадочный",
-                        "bg_image": "bg_library"},
-            "courtyard": {"name": "Школьный двор", "description": "Двор с сакурами", "mood": "Весенний",
-                          "bg_image": "bg_courtyard"}
-        },
+            "locations": {
+        "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный", "bg_image": "bg_classroom"},
+        "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на море и город", "mood": "Романтичный", "bg_image": "bg_rooftop"},
+        "library": {"name": "Библиотека", "description": "Трёхэтажная библиотека с пианино", "mood": "Загадочный", "bg_image": "bg_library"},
+        "courtyard": {"name": "Школьный двор", "description": "Двор с вековой сакурой", "mood": "Весенний", "bg_image": "bg_courtyard"},
+        "cafeteria": {"name": "Столовая", "description": "Просторная столовая с панорамными окнами", "mood": "Шумный", "bg_image": "bg_cafeteria"},
+        "gym": {"name": "Спортзал", "description": "Большой спортзал с площадкой", "mood": "Энергичный", "bg_image": "bg_gym"},
+        "clubroom": {"name": "Клубная комната", "description": "Уютная комната литклуба", "mood": "Творческий", "bg_image": "bg_clubroom"},
+        "nursery": {"name": "Медкабинет", "description": "Светлый кабинет с мятным запахом", "mood": "Успокаивающий", "bg_image": "bg_nursery"},
+        "park": {"name": "Приморский парк", "description": "Парк на берегу моря", "mood": "Романтичный", "bg_image": "bg_park"},
+        "mall": {"name": "ТЦ Сакура-Молл", "description": "Современный торговый центр", "mood": "Современный", "bg_image": "bg_mall"},
+        "beach": {"name": "Пляж", "description": "Песчаный пляж в 15 минутах от школы", "mood": "Свободный", "bg_image": "bg_beach"},
+        "shrine": {"name": "Храм", "description": "Старый синтоистский храм на холме", "mood": "Мистический", "bg_image": "bg_shrine"},
+        "hallway": {"name": "Коридор", "description": "Школьный коридор со шкафчиками", "mood": "Оживлённый", "bg_image": "bg_hallway"},
+        "gate": {"name": "Школьные ворота", "description": "Главные ворота Академии Сакура", "mood": "Встречающий", "bg_image": "bg_gate"},
+        "classroom_evening": {"name": "Класс вечером", "description": "Пустой класс после уроков", "mood": "Ностальгический", "bg_image": "bg_classroom_evening"}
+    },
 
         "rules_for_ai": """Ты - рассказчик в визуальной новелле "Академия Сакура". Жанр: повседневность, школа, романтика.
 
