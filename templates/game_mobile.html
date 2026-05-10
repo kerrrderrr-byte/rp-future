@@ -229,11 +229,66 @@
         }
 
         function viewCharacter(charId){
-            fetch('/api/encyclopedia/view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,char_id:charId})});
-            if(encyclopediaData[charId]){encyclopediaData[charId].viewed=true;currentCharDetail=encyclopediaData[charId];showCharDetail();}
-            hasNewDiscovery=Object.values(encyclopediaData).some(c=>c.unlocked&&!c.viewed);
-            document.getElementById('menuBadge').style.display=hasNewDiscovery?'inline-block':'none';
-            renderEncyclopediaGrid();
+            fetch('/api/encyclopedia/view',{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({session_id:sessionId,char_id:charId})
+            });
+
+            if (encyclopediaData[charId]) {
+                encyclopediaData[charId].viewed = true;
+                currentCharDetail = encyclopediaData[charId];
+                showCharDetail();  // Вот здесь должно открыться
+            }
+
+            hasNewDiscovery = Object.values(encyclopediaData).some(c => c.unlocked && !c.viewed);
+            document.getElementById('menuBadge').style.display = hasNewDiscovery ? 'inline-block' : 'none';
+        }
+
+        function showCharDetail(){
+            const c = currentCharDetail;
+            if (!c) return;
+
+            const val = c.relationship || 0;
+            const pct = ((val + 100) / 200) * 100;
+
+            let emoji = '😐';
+            if (val <= -75) emoji = '😡';
+            else if (val <= -50) emoji = '😠';
+            else if (val <= -25) emoji = '😒';
+            else if (val <= -5) emoji = '😕';
+            else if (val <= 5) emoji = '😐';
+            else if (val <= 25) emoji = '🙂';
+            else if (val <= 50) emoji = '😊';
+            else if (val <= 75) emoji = '😍';
+            else emoji = '🥰';
+
+            document.getElementById('modalTitle').textContent = c.emoji + ' ' + c.name;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="char-detail-body">
+                    <div class="char-detail-sprite">
+                        <img src="/static/images/sprites/${c.sprite}.png">
+                    </div>
+                    <div class="char-detail-info">
+                        <div class="char-detail-role">${c.emoji} ${c.name}</div>
+                        <div>${c.role || ''}</div>
+                        <div class="char-detail-desc">${c.personality || ''}</div>
+                        <div class="rel-bar-c">
+                            <div class="rel-label">Отношение:</div>
+                            <div class="rel-bar">
+                                <div class="rel-fill" style="width:${100 - pct}%;left:${pct}%;"></div>
+                                <div class="rel-emoji">${emoji}</div>
+                            </div>
+                            <div class="rel-val" style="color:${val < -10 ? '#ff4444' : val > 10 ? '#4caf50' : '#aaa'}">
+                                ${val > 0 ? '+' : ''}${val}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Убеждаемся что модальное окно открыто
+            document.getElementById('modalOverlay').classList.add('open');
         }
 
         function showCharDetail(){
