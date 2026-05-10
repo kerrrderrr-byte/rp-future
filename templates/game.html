@@ -150,8 +150,95 @@
     <!-- Модалки -->
     <div class="history-modal" id="historyModal"><div class="history-overlay" onclick="closeHistory()"></div><div class="history-panel"><div class="history-header"><span>📜 История</span><button class="history-close" onclick="closeHistory()">✕</button></div><div class="history-content" id="historyContent"></div></div></div>
     <div class="settings-modal" id="settingsModal"><div class="settings-overlay" onclick="closeSettings()"></div><div class="settings-panel"><div class="settings-header"><span>⚙️ Настройки</span><button class="settings-close" onclick="closeSettings()">✕</button></div><div class="settings-body"><label>Размер текста: <span class="value-label" id="fontSizeLabel">18px</span></label><input type="range" id="fontSizeSlider" min="12" max="26" value="18" oninput="updateFontPreview()"><div class="preview-box" id="fontPreview"><span style="color:#FFB6C1;">🗣️ Ты:</span> Привет!<br><span style="color:#ff69b4;">📚 Моника:</span> Добро пожаловать!</div><label>Скорость печати: <span class="value-label" id="speedLabel">40 мс</span></label><input type="range" id="speedSlider" min="10" max="100" value="40" step="5" oninput="updateSpeedPreview()"><div class="preview-box"><span id="speedDemoText"></span><span class="typing-cursor" id="speedDemoCursor"></span></div><button class="top-btn" style="width:100%;margin-top:15px;text-align:center;" onclick="saveSettings()">💾 Сохранить</button></div></div></div>
-    <div class="settings-modal" id="faqModal"><div class="settings-overlay" onclick="closeFAQ()"></div><div class="settings-panel"><div class="settings-header"><span>❓ FAQ</span><button class="settings-close" onclick="closeFAQ()">✕</button></div><div class="settings-body"><div class="faq-item"><div class="faq-q">❓ Что такое RP Future?</div><div class="faq-a">Генеративная визуальная новелла с ИИ.</div></div><div class="faq-item"><div class="faq-q">❓ Как играть?</div><div class="faq-a">Пиши действия или реплики, нажимай Enter.</div></div><div class="faq-item"><div class="faq-q">❓ Как пропустить печать?</div><div class="faq-a">Пробел или клик по текстовому полю.</div></div></div></div></div>
-    <div class="settings-modal" id="bugModal"><div class="settings-overlay" onclick="closeBugReport()"></div><div class="settings-panel"><div class="settings-header"><span>🐛 Баг-репорт</span><button class="settings-close" onclick="closeBugReport()">✕</button></div><div class="settings-body"><textarea id="bugText" placeholder="Опишите баг..."></textarea><button class="top-btn" style="width:100%;text-align:center;" onclick="submitBug()">📤 Отправить</button></div></div></div>
+<!-- Замени FAQ секцию в game.html -->
+
+<div class="settings-modal" id="faqModal">
+    <div class="settings-overlay" onclick="closeFAQ()"></div>
+    <div class="settings-panel">
+        <div class="settings-header">
+            <span>❓ FAQ — Как играть</span>
+            <button class="settings-close" onclick="closeFAQ()">✕</button>
+        </div>
+        <div class="settings-body">
+
+            <div class="faq-item">
+                <div class="faq-q">🎮 Что это за игра?</div>
+                <div class="faq-a">
+                    Это визуальная новелла, где сюжет создаётся нейросетью прямо во время игры.
+                    Ты общаешься с персонажами, а они отвечают тебе в реальном времени —
+                    никаких заскриптованных диалогов.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">✍️ Как общаться?</div>
+                <div class="faq-a">
+                    Пиши что хочешь сказать или сделать в поле ввода и нажимай <b>Enter</b> (или ▶).
+                    Персонажи ответят тебе.
+                    <br><br>
+                    <b>Примеры:</b><br>
+                    <span style="color:#FFB6C1;">"Привет! Я новенький, меня зовут..."</span><br>
+                    <span style="color:#FFB6C1;">"Сажусь за последнюю парту и достаю тетрадь"</span><br>
+                    <span style="color:#FFB6C1;">"..."</span> — просто наблюдай, персонажи продолжат сами
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">⌨️ Управление</div>
+                <div class="faq-a">
+                    <b>Enter</b> — отправить сообщение<br>
+                    <b>Пробел</b> — промотать текущую реплику<br>
+                    <b>Клик по тексту</b> — то же что и пробел<br>
+                    <b>Пробел ещё раз</b> — перейти к следующей реплике (если персонажи общаются между собой)
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">📖 Что за Энциклопедия?</div>
+                <div class="faq-a">
+                    Когда ты встречаешь нового персонажа — его карточка открывается в энциклопедии.
+                    Там можно посмотреть характер и текущее отношение к тебе.
+                    Неоткрытые персонажи скрыты до первой встречи.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">💕 Что такое "отношения"?</div>
+                <div class="faq-a">
+                    У каждого персонажа есть отношение к тебе — от -100 до +100.
+                    Оно меняется от твоих поступков: дружелюбие повышает, грубость понижает.
+                    Персонажи с хорошим отношением теплее, с плохим — холоднее.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">💾 Сохраняется ли прогресс?</div>
+                <div class="faq-a">
+                    Да, после каждого действия. Можно создать несколько историй
+                    и переключаться между ними через кнопку <b>"Продолжить"</b> на главной.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">⚙️ Можно настроить под себя?</div>
+                <div class="faq-a">
+                    Да — размер текста и скорость печати. Кнопка <b>⚙️ Настройки</b> над полем ввода.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-q">💡 Пара советов</div>
+                <div class="faq-a">
+                    • Пиши развёрнуто — чем подробнее, тем интереснее ответ<br>
+                    • Обращайся к персонажам по имени<br>
+                    • Если застрял — напиши <b>"..."</b> и сцена продолжится<br>
+                    • Не бойся экспериментировать
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>    <div class="settings-modal" id="bugModal"><div class="settings-overlay" onclick="closeBugReport()"></div><div class="settings-panel"><div class="settings-header"><span>🐛 Баг-репорт</span><button class="settings-close" onclick="closeBugReport()">✕</button></div><div class="settings-body"><textarea id="bugText" placeholder="Опишите баг..."></textarea><button class="top-btn" style="width:100%;text-align:center;" onclick="submitBug()">📤 Отправить</button></div></div></div>
     <div class="settings-modal" id="encyclopediaModal"><div class="settings-overlay" onclick="closeEncyclopedia()"></div><div class="encyclopedia-panel"><div class="encyclopedia-header"><span>📖 Энциклопедия</span><button class="settings-close" onclick="closeEncyclopedia()">✕</button></div><div class="encyclopedia-grid" id="encyclopediaGrid"></div></div></div>
     <div class="settings-modal" id="charDetailModal"><div class="settings-overlay" onclick="closeCharDetail()"></div><div class="char-detail-panel"><div class="char-detail-header"><span id="charDetailName"></span><button class="settings-close" onclick="closeCharDetail()">✕</button></div><div class="char-detail-body"><div class="char-detail-sprite"><img id="charDetailImg" src="" alt=""></div><div class="char-detail-info"><div class="char-detail-role" id="charDetailRole"></div><div class="char-detail-desc" id="charDetailDesc"></div><div class="relationship-bar-container"><div class="relationship-label">Отношение:</div><div class="relationship-bar"><div class="relationship-fill" id="relationshipFill"></div><div class="relationship-emoji" id="relationshipEmoji">😐</div></div><div class="relationship-value" id="relationshipValue">0</div></div></div></div></div></div>
 
