@@ -147,74 +147,22 @@
         </div>
     </div>
 
-    <!-- История -->
-    <div class="history-modal" id="historyModal">
-        <div class="history-overlay" onclick="closeHistory()"></div>
-        <div class="history-panel"><div class="history-header"><span>📜 История</span><button class="history-close" onclick="closeHistory()">✕</button></div><div class="history-content" id="historyContent"></div></div>
-    </div>
+    <!-- Модалки -->
+    <div class="history-modal" id="historyModal"><div class="history-overlay" onclick="closeHistory()"></div><div class="history-panel"><div class="history-header"><span>📜 История</span><button class="history-close" onclick="closeHistory()">✕</button></div><div class="history-content" id="historyContent"></div></div></div>
+    <div class="settings-modal" id="settingsModal"><div class="settings-overlay" onclick="closeSettings()"></div><div class="settings-panel"><div class="settings-header"><span>⚙️ Настройки</span><button class="settings-close" onclick="closeSettings()">✕</button></div><div class="settings-body"><label>Размер текста: <span class="value-label" id="fontSizeLabel">18px</span></label><input type="range" id="fontSizeSlider" min="12" max="26" value="18" oninput="updateFontPreview()"><div class="preview-box" id="fontPreview"><span style="color:#FFB6C1;">🗣️ Ты:</span> Привет!<br><span style="color:#ff69b4;">📚 Моника:</span> Добро пожаловать!</div><label>Скорость печати: <span class="value-label" id="speedLabel">40 мс</span></label><input type="range" id="speedSlider" min="10" max="100" value="40" step="5" oninput="updateSpeedPreview()"><div class="preview-box"><span id="speedDemoText"></span><span class="typing-cursor" id="speedDemoCursor"></span></div><button class="top-btn" style="width:100%;margin-top:15px;text-align:center;" onclick="saveSettings()">💾 Сохранить</button></div></div></div>
+    <div class="settings-modal" id="faqModal"><div class="settings-overlay" onclick="closeFAQ()"></div><div class="settings-panel"><div class="settings-header"><span>❓ FAQ</span><button class="settings-close" onclick="closeFAQ()">✕</button></div><div class="settings-body"><div class="faq-item"><div class="faq-q">❓ Что такое RP Future?</div><div class="faq-a">Генеративная визуальная новелла с ИИ.</div></div><div class="faq-item"><div class="faq-q">❓ Как играть?</div><div class="faq-a">Пиши действия или реплики, нажимай Enter.</div></div><div class="faq-item"><div class="faq-q">❓ Как пропустить печать?</div><div class="faq-a">Пробел или клик по текстовому полю.</div></div></div></div></div>
+    <div class="settings-modal" id="bugModal"><div class="settings-overlay" onclick="closeBugReport()"></div><div class="settings-panel"><div class="settings-header"><span>🐛 Баг-репорт</span><button class="settings-close" onclick="closeBugReport()">✕</button></div><div class="settings-body"><textarea id="bugText" placeholder="Опишите баг..."></textarea><button class="top-btn" style="width:100%;text-align:center;" onclick="submitBug()">📤 Отправить</button></div></div></div>
+    <div class="settings-modal" id="encyclopediaModal"><div class="settings-overlay" onclick="closeEncyclopedia()"></div><div class="encyclopedia-panel"><div class="encyclopedia-header"><span>📖 Энциклопедия</span><button class="settings-close" onclick="closeEncyclopedia()">✕</button></div><div class="encyclopedia-grid" id="encyclopediaGrid"></div></div></div>
+    <div class="settings-modal" id="charDetailModal"><div class="settings-overlay" onclick="closeCharDetail()"></div><div class="char-detail-panel"><div class="char-detail-header"><span id="charDetailName"></span><button class="settings-close" onclick="closeCharDetail()">✕</button></div><div class="char-detail-body"><div class="char-detail-sprite"><img id="charDetailImg" src="" alt=""></div><div class="char-detail-info"><div class="char-detail-role" id="charDetailRole"></div><div class="char-detail-desc" id="charDetailDesc"></div><div class="relationship-bar-container"><div class="relationship-label">Отношение:</div><div class="relationship-bar"><div class="relationship-fill" id="relationshipFill"></div><div class="relationship-emoji" id="relationshipEmoji">😐</div></div><div class="relationship-value" id="relationshipValue">0</div></div></div></div></div></div>
 
-    <!-- Настройки -->
-    <div class="settings-modal" id="settingsModal">
-        <div class="settings-overlay" onclick="closeSettings()"></div>
-        <div class="settings-panel"><div class="settings-header"><span>⚙️ Настройки</span><button class="settings-close" onclick="closeSettings()">✕</button></div>
-            <div class="settings-body">
-                <label>Размер текста: <span class="value-label" id="fontSizeLabel">18px</span></label><input type="range" id="fontSizeSlider" min="12" max="26" value="18" oninput="updateFontPreview()">
-                <div class="preview-box" id="fontPreview"><span style="color:#FFB6C1;">🗣️ Ты:</span> Привет!<br><span style="color:#ff69b4;">📚 Моника:</span> Добро пожаловать!</div>
-                <label>Скорость печати: <span class="value-label" id="speedLabel">40 мс</span></label><input type="range" id="speedSlider" min="10" max="100" value="40" step="5" oninput="updateSpeedPreview()">
-                <div class="preview-box"><span id="speedDemoText"></span><span class="typing-cursor" id="speedDemoCursor"></span></div>
-                <button class="top-btn" style="width:100%;margin-top:15px;text-align:center;" onclick="saveSettings()">💾 Сохранить</button>
-            </div></div>
-    </div>
-
-    <!-- FAQ -->
-    <div class="settings-modal" id="faqModal">
-        <div class="settings-overlay" onclick="closeFAQ()"></div>
-        <div class="settings-panel"><div class="settings-header"><span>❓ FAQ</span><button class="settings-close" onclick="closeFAQ()">✕</button></div>
-            <div class="settings-body">
-                <div class="faq-item"><div class="faq-q">❓ Что такое RP Future?</div><div class="faq-a">Генеративная визуальная новелла с ИИ.</div></div>
-                <div class="faq-item"><div class="faq-q">❓ Как играть?</div><div class="faq-a">Пиши действия или реплики в поле ввода, нажимай Enter.</div></div>
-                <div class="faq-item"><div class="faq-q">❓ Как пропустить печать?</div><div class="faq-a">Пробел или клик по текстовому полю.</div></div>
-            </div></div>
-    </div>
-
-    <!-- Баг-репорт -->
-    <div class="settings-modal" id="bugModal">
-        <div class="settings-overlay" onclick="closeBugReport()"></div>
-        <div class="settings-panel"><div class="settings-header"><span>🐛 Баг-репорт</span><button class="settings-close" onclick="closeBugReport()">✕</button></div>
-            <div class="settings-body"><textarea id="bugText" placeholder="Опишите баг..."></textarea><button class="top-btn" style="width:100%;text-align:center;" onclick="submitBug()">📤 Отправить</button></div></div>
-    </div>
-
-    <!-- Энциклопедия -->
-    <div class="settings-modal" id="encyclopediaModal">
-        <div class="settings-overlay" onclick="closeEncyclopedia()"></div>
-        <div class="encyclopedia-panel"><div class="encyclopedia-header"><span>📖 Энциклопедия</span><button class="settings-close" onclick="closeEncyclopedia()">✕</button></div><div class="encyclopedia-grid" id="encyclopediaGrid"></div></div>
-    </div>
-
-    <!-- Детальная карточка -->
-    <div class="settings-modal" id="charDetailModal">
-        <div class="settings-overlay" onclick="closeCharDetail()"></div>
-        <div class="char-detail-panel">
-            <div class="char-detail-header"><span id="charDetailName"></span><button class="settings-close" onclick="closeCharDetail()">✕</button></div>
-            <div class="char-detail-body">
-                <div class="char-detail-sprite"><img id="charDetailImg" src="" alt=""></div>
-                <div class="char-detail-info">
-                    <div class="char-detail-role" id="charDetailRole"></div>
-                    <div class="char-detail-desc" id="charDetailDesc"></div>
-                    <div class="relationship-bar-container">
-                        <div class="relationship-label">Отношение:</div>
-                        <div class="relationship-bar"><div class="relationship-fill" id="relationshipFill"></div><div class="relationship-emoji" id="relationshipEmoji">😐</div></div>
-                        <div class="relationship-value" id="relationshipValue">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
+        <script>
         const sessionId = new URLSearchParams(window.location.search).get('session');
         let gameData = null, currentScene = null, isTyping = false, typingTimeout = null, waitingForInput = true;
         let TYPING_SPEED = 40, FAST_TYPING_SPEED = 12;
         let encyclopediaData = {}, hasNewDiscovery = false, currentCharDetail = null;
+        let dialogContinueResolver = null;
+        let finishTypingResolver = null; // Для скипа текущей реплики
+
         const EMOTION_ICONS = {'радость':'😊','грусть':'😢','злость':'😠','удивление':'😲','нейтрально':'😐','смущение':'😳','восторг':'🤩','happy':'😊','sad':'😢','angry':'😠','surprised':'😲','normal':'😐','excited':'🤩','serious':'🧐','shy':'😳','flirty':'😏','worried':'😟','proud':'😤'};
         const CHAR_COLORS = {'garfild':'#ff8c42','monika':'#ff69b4','reiko':'#00d4aa','yuki':'#b8a9d4','takeshi':'#ff4444','hana':'#4da6ff','haru':'#ffd700','akira':'#7cfc00','sensei':'#deb887','yumi':'#ff9999','ryuu':'#808080','emi':'#ff1493'};
         const CHAR_NAMES = {'garfild':'Гарфилд','monika':'Моника','reiko':'Рейко','yuki':'Юки','takeshi':'Такеши','hana':'Хана','haru':'Хару','akira':'Акира','sensei':'Танака-сенсей','yumi':'Юми','ryuu':'Рю','emi':'Эми'};
@@ -228,103 +176,105 @@
         function createPetals() { const c=document.getElementById('sakuraPetals'); for(let i=0;i<20;i++){ const p=document.createElement('div');p.className='petal';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*8+'s';p.style.animationDuration=(Math.random()*6+6)+'s';c.appendChild(p); } }
 
         async function loadGame() { if(!sessionId)return; try{ const r=await fetch('/api/load_game_data?session='+sessionId); const d=await r.json(); if(d.success){ gameData=d.game; document.getElementById('locationLabel').textContent='📍 '+d.game.location_name; updateBackground(d.game.current_location); if(gameData.game_history.length)await displayScene(gameData.game_history[gameData.game_history.length-1]); enableInput(); } }catch(e){console.error(e);} }
-        async function typeText(el,text,speed=TYPING_SPEED) { isTyping=true;el.textContent='';document.getElementById('typingCursor').style.display='inline-block';disableInput(); return new Promise(resolve=>{ let i=0; function type(){ if(i<text.length){ el.textContent+=text[i++]; const delay=(text[i-1]==='.'||text[i-1]==='!')?speed*5:(text[i-1]===',')?speed*2:speed+Math.random()*15; typingTimeout=setTimeout(type,delay); } else { document.getElementById('typingCursor').style.display='none';isTyping=false;resolve(); } } type(); }); }
-        function skipTyping() { if(isTyping&&typingTimeout){ clearTimeout(typingTimeout);isTyping=false; const el=document.getElementById('typingText'); if(currentScene)el.textContent=currentScene.type==='player_action'?'🗣️ '+currentScene.player_text:(currentScene.speaker_text||''); document.getElementById('typingCursor').style.display='none';enableInput(); } }
+
+        async function typeText(el, text, speed = TYPING_SPEED) {
+            isTyping = true; el.textContent = '';
+            document.getElementById('typingCursor').style.display = 'inline-block';
+            disableInput();
+            return new Promise(resolve => {
+                finishTypingResolver = resolve; // Сохраняем резолвер
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        el.textContent += text[i++];
+                        const delay = (text[i-1] === '.' || text[i-1] === '!') ? speed*5 : (text[i-1] === ',') ? speed*2 : speed + Math.random()*15;
+                        typingTimeout = setTimeout(type, delay);
+                    } else {
+                        finishTypingResolver = null;
+                        document.getElementById('typingCursor').style.display = 'none';
+                        isTyping = false;
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+                function skipCurrentTyping() {
+            if (finishTypingResolver) {
+                clearTimeout(typingTimeout);
+                const el = document.getElementById('typingText');
+
+                // Показываем полный текст текущей реплики
+                if (currentScene && currentScene.dialog_chain) {
+                    // Ищем какая реплика сейчас печатается — ищем span внутри typingText
+                    const span = el.querySelector('span');
+                    if (span && span._fullText) {
+                        span.textContent = span._fullText;
+                    } else {
+                        // Фолбэк — просто показываем что есть
+                        // (уже напечатанное остаётся)
+                    }
+                } else if (currentScene) {
+                    // Одиночная реплика
+                    el.textContent = currentScene.speaker_text || '';
+                }
+
+                const resolve = finishTypingResolver;
+                finishTypingResolver = null;
+                document.getElementById('typingCursor').style.display = 'none';
+                isTyping = false;
+                resolve();
+            }
+        }
 
         async function displayDialog(scene) {
             const nameBox = document.getElementById('speakerNameBox');
             const typingEl = document.getElementById('typingText');
             const narratorEl = document.getElementById('narratorText');
+            const cursorEl = document.getElementById('typingCursor');
 
-            console.log('🔗 Начинаем dialog_chain, реплик:', scene.dialog_chain.length);
-
-            // Сначала показываем narrator_text
-            if (scene.narrator_text) {
-                narratorEl.textContent = scene.narrator_text;
-                await new Promise(r => setTimeout(r, 600)); // Пауза чтобы прочитать описание
-            }
+            if (scene.narrator_text) { narratorEl.textContent = scene.narrator_text; await new Promise(r => setTimeout(r, 500)); }
 
             for (let i = 0; i < scene.dialog_chain.length; i++) {
-                const line = scene.dialog_chain[i];
-                const speakerId = line.speaker;
-
-                console.log(`  💬 Реплика ${i+1}: ${speakerId} — "${line.text.substring(0, 30)}..."`);
-
-                // Подсвечиваем говорящего
+                const line = scene.dialog_chain[i], speakerId = line.speaker;
                 const sprite = document.getElementById('sprite-' + speakerId);
-                if (sprite) {
-                    // Убираем подсветку с предыдущего
-                    document.querySelectorAll('.character-sprite.highlighted').forEach(s => {
-                        if (s.id !== 'sprite-' + speakerId) s.classList.remove('highlighted');
-                    });
-                    sprite.classList.add('highlighted');
-                }
-
-                // Показываем имя говорящего
+                if (sprite) { document.querySelectorAll('.character-sprite.highlighted').forEach(s => { if (s.id !== 'sprite-' + speakerId) s.classList.remove('highlighted'); }); sprite.classList.add('highlighted'); }
                 nameBox.style.display = 'block';
-                const nameEl = document.getElementById('speakerName');
-                nameEl.textContent = CHAR_NAMES[speakerId] || speakerId;
-                const bgColor = CHAR_COLORS[speakerId] || '#fff';
-                nameEl.style.background = bgColor;
-                nameEl.style.color = '#000';
-                nameEl.style.boxShadow = '0 4px 15px ' + bgColor + '44';
-
-                // Печатаем реплику
-                typingEl.innerHTML = '';
-                const cursorEl = document.getElementById('typingCursor');
-                cursorEl.style.display = 'inline-block';
-                cursorEl.style.background = bgColor;
-
+                const nameEl = document.getElementById('speakerName'); nameEl.textContent = CHAR_NAMES[speakerId] || speakerId;
+                const bgColor = CHAR_COLORS[speakerId] || '#fff'; nameEl.style.background = bgColor; nameEl.style.color = '#000';
+                typingEl.innerHTML = ''; cursorEl.style.display = 'inline-block'; cursorEl.style.background = bgColor;
                 const span = document.createElement('span');
                 span.style.color = bgColor;
+                span._fullText = line.text;  // Сохраняем полный текст для скипа
                 typingEl.appendChild(span);
+                await typeText(span, line.text, 35);
+                cursorEl.style.display = 'none';
 
-                await typeText(span, line.text, 35); // Чуть медленнее для читаемости
-
-                // ВАЖНО: ЖДЁМ КЛИКА или ПРОБЕЛА перед следующей репликой
                 if (i < scene.dialog_chain.length - 1) {
-                    // Показываем подсказку
-                    const hint = document.createElement('div');
-                    hint.style.cssText = 'color: #666; font-size: 0.7em; text-align: center; margin-top: 4px;';
-                    hint.textContent = 'Нажми Пробел или кликни для продолжения...';
+                    const hint = document.createElement('div'); hint.textContent = '▸ Пробел или клик для продолжения';
+                    hint.style.cssText = 'color:#666;font-size:0.7em;text-align:center;margin-top:4px;animation:hintPulse 1.5s infinite;';
                     typingEl.parentElement.appendChild(hint);
-
-                    // Ждём клика или пробела
-                    await waitForContinue();
-
-                    // Убираем подсказку
-                    if (hint.parentElement) hint.remove();
-
-                    // Убираем подсветку если не последняя реплика
-                    if (sprite && i < scene.dialog_chain.length - 1) {
-                        sprite.classList.remove('highlighted');
-                    }
+                    await new Promise(resolve => { dialogContinueResolver = resolve; });
+                    if (hint.parentElement) hint.remove(); if (sprite) sprite.classList.remove('highlighted');
                 }
             }
-
-            // Финальная подсветка согласно sprites
-            if (scene.sprites) updateSprites(scene.sprites);
-
-            cursorEl.style.display = 'none';
-            console.log('🔗 dialog_chain завершён');
+            nameBox.style.display = 'none'; if (scene.sprites) updateSprites(scene.sprites);
+            cursorEl.style.display = 'none'; dialogContinueResolver = null;
         }
 
-        // Новая функция: ждать продолжения
-        function waitForContinue() {
-            return new Promise(resolve => {
-                function handler(e) {
-                    if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
-                    e.preventDefault();
-                    cleanup();
-                    resolve();
-                }
-                function cleanup() {
-                    document.removeEventListener('keydown', handler);
-                    document.removeEventListener('click', handler);
-                }
-                document.addEventListener('keydown', handler);
-                document.addEventListener('click', handler);
-            });
+        // Единый обработчик
+        function handleUserInput(e) {
+            // 1. Ждём продолжения chain'а
+            if (dialogContinueResolver) {
+                if (e.type === 'keydown' && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); const r = dialogContinueResolver; dialogContinueResolver = null; r(); return; }
+                if (e.type === 'click' && e.target.closest('.text-box-container') && e.target.id !== 'playerInput' && e.target.id !== 'sendButton') { const r = dialogContinueResolver; dialogContinueResolver = null; r(); return; }
+            }
+            // 2. Скип текущей печати (chain или одиночная)
+            if (finishTypingResolver) {
+                if (e.type === 'keydown' && e.key === ' ' && document.activeElement !== document.getElementById('playerInput')) { e.preventDefault(); skipCurrentTyping(); return; }
+                if (e.type === 'click' && e.target.closest('.text-box-container') && e.target.id !== 'playerInput' && e.target.id !== 'sendButton') { skipCurrentTyping(); return; }
+            }
         }
 
         async function displayScene(scene) {
@@ -341,7 +291,7 @@
         function disableInput() { document.getElementById('playerInput').disabled=true;document.getElementById('sendButton').disabled=true;waitingForInput=false; }
 
         async function sendAction() {
-            if(isTyping){skipTyping();return;} if(!waitingForInput)return;
+            if(finishTypingResolver){skipCurrentTyping();return;} if(!waitingForInput)return;
             const inp=document.getElementById('playerInput'),action=inp.value.trim(); if(!action){inp.focus();return;}
             inp.value='';disableInput();
             const playerScene={type:'player_action',player_text:action}; if(gameData)gameData.game_history.push(playerScene);
@@ -350,7 +300,7 @@
                 if(d.success&&d.scene){ if(gameData)gameData.game_history.push(d.scene); await new Promise(rs=>setTimeout(rs,600)); await displayScene(d.scene); await loadEncyclopediaState(); } }catch(e){console.error(e);enableInput();}
         }
 
-        function showHistory() { if(!gameData||!gameData.game_history)return; const c=document.getElementById('historyContent');c.innerHTML=''; gameData.game_history.forEach(scene=>{ const d=document.createElement('div');d.className='history-entry'; if(scene.type==='player_action'){d.classList.add('player');d.innerHTML=`<div class="who">🗣️ Ты:</div><div>${scene.player_text}</div>`;} else if(scene.speaker_id==='narrator'||!scene.speaker_id){d.classList.add('narrator');d.innerHTML=`<div>📖 ${scene.speaker_text||scene.narrator_text||''}</div>`;} else {d.style.borderLeftColor=CHAR_COLORS[scene.speaker_id]||'#fff';d.innerHTML=`<div class="who">${CHAR_EMOJIS[scene.speaker_id]||''} ${scene.speaker_name||CHAR_NAMES[scene.speaker_id]||scene.speaker_id}:</div><div>${scene.speaker_text||''}</div>`;} c.appendChild(d); }); setTimeout(()=>c.scrollTop=c.scrollHeight,100);document.getElementById('historyModal').style.display='flex'; }
+        function showHistory() { if(!gameData||!gameData.game_history)return; const c=document.getElementById('historyContent');c.innerHTML=''; gameData.game_history.forEach(scene=>{ const d=document.createElement('div');d.className='history-entry'; if(scene.type==='player_action'){d.classList.add('player');d.innerHTML=`<div class="who">🗣️ Ты:</div><div>${scene.player_text}</div>`;} else if(scene.speaker_id==='narrator'){d.classList.add('narrator');d.innerHTML=`<div>📖 ${scene.speaker_text||scene.narrator_text||''}</div>`;} else if(scene.dialog_chain&&scene.dialog_chain.length){ d.style.borderLeftColor=CHAR_COLORS[scene.speaker_id]||'#fff'; let h=''; scene.dialog_chain.forEach(l=>{ const cl=CHAR_COLORS[l.speaker]||'#fff'; h+=`<div style="color:${cl};margin:3px 0;"><b>${CHAR_EMOJIS[l.speaker]||''} ${CHAR_NAMES[l.speaker]||l.speaker}:</b> ${l.text}</div>`; }); d.innerHTML=h; } else { d.style.borderLeftColor=CHAR_COLORS[scene.speaker_id]||'#fff'; d.innerHTML=`<div class="who">${CHAR_EMOJIS[scene.speaker_id]||''} ${scene.speaker_name||CHAR_NAMES[scene.speaker_id]||scene.speaker_id}:</div><div>${scene.speaker_text||''}</div>`; } c.appendChild(d); }); setTimeout(()=>c.scrollTop=c.scrollHeight,100);document.getElementById('historyModal').style.display='flex'; }
         function closeHistory() { document.getElementById('historyModal').style.display='none'; }
         function goToMenu() { if(confirm('Вернуться в главное меню?')){ fetch('/api/saves/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId})}); window.location.href='/'; } }
 
@@ -358,7 +308,7 @@
         function openSettings() { document.getElementById('settingsModal').style.display='flex';document.getElementById('fontSizeSlider').value=currentFontSize;document.getElementById('speedSlider').value=currentSpeed;updateFontPreview(); }
         function closeSettings() { document.getElementById('settingsModal').style.display='none'; }
         function updateFontPreview() { const s=document.getElementById('fontSizeSlider').value;document.getElementById('fontSizeLabel').textContent=s+'px';document.getElementById('fontPreview').style.fontSize=s+'px'; }
-        function updateSpeedPreview() { const s=document.getElementById('speedSlider').value;document.getElementById('speedLabel').textContent=s+' мс'; const el=document.getElementById('speedDemoText');el.textContent='';document.getElementById('speedDemoCursor').style.display='inline-block'; const t='Это пример текста...';let i=0;function type(){if(i<t.length){el.textContent+=t[i++];setTimeout(type,parseInt(s));}else document.getElementById('speedDemoCursor').style.display='none';} type(); }
+        function updateSpeedPreview() { const s=document.getElementById('speedSlider').value;document.getElementById('speedLabel').textContent=s+' мс'; const el=document.getElementById('speedDemoText');el.textContent='';document.getElementById('speedDemoCursor').style.display='inline-block'; const t='Пример...';let i=0;function type(){if(i<t.length){el.textContent+=t[i++];setTimeout(type,parseInt(s));}else document.getElementById('speedDemoCursor').style.display='none';} type(); }
         function saveSettings() { currentFontSize=parseInt(document.getElementById('fontSizeSlider').value);currentSpeed=parseInt(document.getElementById('speedSlider').value);document.getElementById('dialogueText').style.fontSize=currentFontSize+'px';document.getElementById('narratorText').style.fontSize=(currentFontSize*0.8)+'px';TYPING_SPEED=currentSpeed;FAST_TYPING_SPEED=Math.floor(currentSpeed/3);localStorage.setItem('fontSize',currentFontSize);localStorage.setItem('typingSpeed',currentSpeed);closeSettings(); }
         function loadSettings() { const sf=localStorage.getItem('fontSize'),ss=localStorage.getItem('typingSpeed'); if(sf){currentFontSize=parseInt(sf);document.getElementById('dialogueText').style.fontSize=currentFontSize+'px';document.getElementById('narratorText').style.fontSize=(currentFontSize*0.8)+'px';} if(ss){currentSpeed=parseInt(ss);TYPING_SPEED=currentSpeed;FAST_TYPING_SPEED=Math.floor(currentSpeed/3);} }
         function openFAQ() { document.getElementById('faqModal').style.display='flex'; } function closeFAQ() { document.getElementById('faqModal').style.display='none'; }
@@ -373,15 +323,15 @@
         function updateRelationshipBar(value) { const fill=document.getElementById('relationshipFill'); const emoji=document.getElementById('relationshipEmoji'); const valEl=document.getElementById('relationshipValue'); const percent=((value+100)/200)*100; fill.style.width=(100-percent)+'%';fill.style.left=percent+'%'; if(value<=-75)emoji.textContent='😡';else if(value<=-50)emoji.textContent='😠';else if(value<=-25)emoji.textContent='😒';else if(value<=-5)emoji.textContent='😕';else if(value<=5)emoji.textContent='😐';else if(value<=25)emoji.textContent='🙂';else if(value<=50)emoji.textContent='😊';else if(value<=75)emoji.textContent='😍';else emoji.textContent='🥰'; valEl.textContent=(value>0?'+':'')+value; valEl.style.color=value<-10?'#ff4444':value>10?'#4caf50':'#aaa'; }
         function closeCharDetail() { document.getElementById('charDetailModal').style.display='none';currentCharDetail=null; }
         function closeEncyclopedia() { document.getElementById('encyclopediaModal').style.display='none'; }
-        function showDiscoveryNotification(charId) { const d=encyclopediaData[charId];if(!d)return; const n=document.createElement('div');n.className='unlock-notification';n.innerHTML=`✨ Вы встретили <b>${d.name}</b>! Подробности в энциклопедии 📖`;document.body.appendChild(n);setTimeout(()=>n.remove(),4000); }
+        function showDiscoveryNotification(charId) { const d=encyclopediaData[charId];if(!d)return; const n=document.createElement('div');n.className='unlock-notification';n.innerHTML=`✨ Вы встретили <b>${d.name}</b>!`;document.body.appendChild(n);setTimeout(()=>n.remove(),4000); }
 
+        document.addEventListener('keydown', handleUserInput);
+        document.addEventListener('click', handleUserInput);
         document.addEventListener('click', e => { if(e.target.classList.contains('history-overlay'))closeHistory(); if(e.target.classList.contains('settings-overlay')){closeSettings();closeFAQ();closeBugReport();closeEncyclopedia();closeCharDetail();} });
         document.addEventListener('DOMContentLoaded', () => { createSprites(); createPetals(); loadSettings(); loadEncyclopediaState(); loadGame(); });
-        document.getElementById('playerInput').addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();sendAction();} });
-        document.getElementById('sendButton').addEventListener('click', e => { e.preventDefault();sendAction(); });
-        document.getElementById('sendButton').addEventListener('touchend', e => { e.preventDefault();sendAction(); });
-        document.querySelector('.text-box-container').addEventListener('click', e => { if(isTyping&&e.target!==document.getElementById('playerInput')&&e.target.id!=='sendButton')skipTyping(); });
-        document.addEventListener('keydown', e => { if(e.key===' '&&isTyping&&document.activeElement!==document.getElementById('playerInput')){e.preventDefault();skipTyping();} });
+        document.getElementById('playerInput').addEventListener('keydown', e => { if(e.key==='Enter'&&!dialogContinueResolver&&!finishTypingResolver){e.preventDefault();sendAction();} });
+        document.getElementById('sendButton').addEventListener('click', e => { if(!dialogContinueResolver&&!finishTypingResolver){e.preventDefault();sendAction();} });
+        document.getElementById('sendButton').addEventListener('touchend', e => { if(!dialogContinueResolver&&!finishTypingResolver){e.preventDefault();sendAction();} });
     </script>
 </body>
 </html>
