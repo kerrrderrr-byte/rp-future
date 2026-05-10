@@ -3,70 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RP Future - Академия Сакура</title>
+    <title>RP Future - Игра</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Comfortaa', sans-serif; height: 100dvh; overflow: hidden; background: #000; user-select: none; -webkit-user-select: none; position: fixed; width: 100%; }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        .novel-container { width: 100%; height: 100dvh; display: flex; flex-direction: column; }
 
-        body {
-            font-family: 'Comfortaa', sans-serif;
-            height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            background: #000;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: pan-x;
-            position: fixed;
-            width: 100%;
-        }
+        /* Сцена */
+        .scene-viewport { flex: 1; position: relative; overflow: hidden; min-height: 45%; }
 
-        .novel-container {
-            width: 100%;
-            height: 100vh;
-            height: 100dvh;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Сцена с камерой */
-        .scene-viewport {
-            flex: 1;
-            position: relative;
-            overflow: hidden;
-            min-height: 50%;
-        }
-
-        .scene-camera {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            display: flex;
-            align-items: flex-end;
-            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            will-change: transform;
-        }
-
-        /* Фон внутри камеры */
+        /* Фон - НЕ циклится, просто одна картинка на весь экран */
         .scene-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 300vw;
-            height: 100%;
-            background-size: auto 100%;
-            background-position: center top;
-            background-repeat: repeat-x;
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease;
             z-index: 0;
         }
-
         .bg-classroom { background-image: url('/static/images/backgrounds/bg_classroom.png'); }
         .bg-rooftop { background-image: url('/static/images/backgrounds/bg_rooftop.png'); }
         .bg-library { background-image: url('/static/images/backgrounds/bg_library.png'); }
@@ -83,244 +39,257 @@
         .bg-gate { background-image: url('/static/images/backgrounds/bg_gate.png'); }
         .bg-classroom-evening { background-image: url('/static/images/backgrounds/bg_classroom_evening.png'); }
 
-        /* Затемнение */
+        /* Виньетка */
         .vignette {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 30%;
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 35%;
             background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%);
-            z-index: 2;
-            pointer-events: none;
+            z-index: 2; pointer-events: none;
         }
 
-        /* Спрайты */
+        /* Спрайты - абсолютное позиционирование по центру */
         .sprites-layer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 300vw;
-            height: 100%;
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
-            display: flex;
-            align-items: flex-end;
-            pointer-events: none;
+            display: flex; justify-content: center; align-items: flex-end;
+            gap: 10px; padding: 0 5%;
         }
-
         .sprite-slot {
-            position: absolute;
-            bottom: 5%;
-            transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: none; transition: all 0.5s ease;
             filter: brightness(0.7) saturate(0.8);
+            flex-shrink: 0;
         }
-
-        .sprite-slot.visible {
-            display: block;
-        }
-
-        .sprite-slot.hidden {
-            display: none;
-        }
-
+        .sprite-slot.visible { display: block; }
         .sprite-slot.highlighted {
             filter: brightness(1.2) saturate(1.2) drop-shadow(0 0 20px rgba(255,255,255,0.8));
-            transform: translateY(-10px) scale(1.05);
-            z-index: 10;
+            transform: translateY(-8px) scale(1.05); z-index: 10;
         }
-
         .sprite-slot img {
-            max-height: 55vh;
-            max-width: 35vw;
-            object-fit: contain;
-            object-position: bottom;
+            max-height: 50vh; max-width: 35vw; min-width: 80px;
+            object-fit: contain; object-position: bottom;
         }
-
         .sprite-name-tag {
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
+            position: absolute; bottom: -18px; left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 0.7em;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.8); color: #fff;
+            padding: 2px 8px; border-radius: 8px;
+            font-size: 0.6em; white-space: nowrap;
+            opacity: 0; transition: opacity 0.3s;
         }
-
-        .sprite-slot.highlighted .sprite-name-tag {
-            opacity: 1;
-            background: rgba(255,255,255,0.9);
-            color: #000;
-            font-weight: 700;
-        }
+        .sprite-slot.highlighted .sprite-name-tag { opacity: 1; }
 
         /* Локация */
         .location-tag {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: #FFB6C1;
-            padding: 6px 14px;
-            border-radius: 15px;
-            font-size: 0.7em;
-            letter-spacing: 1px;
-            z-index: 5;
-            backdrop-filter: blur(5px);
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.7); color: #FFB6C1;
+            padding: 6px 12px; border-radius: 12px;
+            font-size: 0.7em; letter-spacing: 1px; z-index: 5;
         }
 
-        /* Текстовое поле */
+        /* Бургер-меню */
+        .burger-btn {
+            position: absolute; top: 10px; right: 10px;
+            width: 36px; height: 36px;
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,182,193,0.3);
+            border-radius: 8px; z-index: 20;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            gap: 4px; cursor: pointer;
+        }
+        .burger-btn span {
+            display: block; width: 20px; height: 2px;
+            background: #FFB6C1; border-radius: 1px;
+            transition: all 0.3s;
+        }
+        .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
+        .burger-btn.open span:nth-child(2) { opacity: 0; }
+        .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(4px,-4px); }
+
+        /* Выпадающее меню */
+        .slide-menu {
+            position: absolute; top: 52px; right: 10px;
+            background: rgba(20,20,40,0.95); border-radius: 15px;
+            border: 1px solid rgba(255,182,193,0.3);
+            padding: 8px 0; z-index: 25;
+            display: none; flex-direction: column;
+            min-width: 160px;
+            backdrop-filter: blur(10px);
+            animation: menuIn 0.2s ease;
+        }
+        .slide-menu.open { display: flex; }
+        @keyframes menuIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-menu button {
+            background: none; border: none;
+            color: #FFB6C1; padding: 10px 16px;
+            text-align: left; font-family: 'Comfortaa', sans-serif;
+            font-size: 0.8em; cursor: pointer;
+            transition: background 0.2s; letter-spacing: 1px;
+        }
+        .slide-menu button:hover { background: rgba(255,105,180,0.2); }
+        .slide-menu .badge-dot {
+            display: inline-block; width: 8px; height: 8px;
+            background: #ff4444; border-radius: 50%;
+            margin-left: 6px; animation: badgePulse 2s infinite;
+        }
+        @keyframes badgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.7); } 50% { box-shadow: 0 0 0 6px rgba(255,68,68,0); } }
+
+        /* Текст */
         .text-box {
             background: linear-gradient(180deg, rgba(10,10,20,0.9) 0%, rgba(10,10,20,0.98) 100%);
-            padding: 12px 15px 20px;
+            padding: 10px 12px 16px;
             border-top: 1px solid rgba(255,182,193,0.2);
-            z-index: 10;
-            backdrop-filter: blur(10px);
+            z-index: 10; backdrop-filter: blur(10px);
         }
-
-        .speaker-tag {
-            display: none;
-            margin-bottom: 6px;
-        }
-
+        .speaker-tag { display: none; margin-bottom: 4px; }
         .speaker-tag span {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.8em;
-            letter-spacing: 1px;
+            display: inline-block; padding: 3px 12px;
+            border-radius: 10px; font-weight: 700;
+            font-size: 0.75em; letter-spacing: 1px;
         }
-
         .narrator-line {
-            color: #a0a0c0;
-            font-style: italic;
-            font-size: 0.75em;
-            margin-bottom: 4px;
-            min-height: 18px;
-            line-height: 1.5;
+            color: #a0a0c0; font-style: italic;
+            font-size: 0.7em; margin-bottom: 3px;
+            min-height: 16px; line-height: 1.5;
         }
-
         .dialogue-line {
-            color: #fff;
-            font-size: 0.9em;
-            line-height: 1.6;
-            min-height: 40px;
+            color: #fff; font-size: 0.85em;
+            line-height: 1.6; min-height: 36px;
             letter-spacing: 0.5px;
         }
-
         .typing-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1em;
-            background: #FFB6C1;
-            margin-left: 2px;
-            animation: blink 0.8s infinite;
-            vertical-align: text-bottom;
+            display: inline-block; width: 2px; height: 1em;
+            background: #FFB6C1; margin-left: 2px;
+            animation: blink 0.8s infinite; vertical-align: text-bottom;
         }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* Ввод */
-        .input-row {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+        .input-row { display: flex; gap: 8px; margin-top: 8px; }
         #playerInput {
-            flex: 1;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,182,193,0.3);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 20px;
-            font-family: 'Comfortaa', sans-serif;
-            font-size: 0.85em;
+            flex: 1; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,182,193,0.3); color: #fff;
+            padding: 10px 12px; border-radius: 18px;
+            font-family: 'Comfortaa', sans-serif; font-size: 0.8em;
             outline: none;
         }
-
-        #playerInput:focus {
-            border-color: #FFB6C1;
-            background: rgba(255,255,255,0.12);
-        }
-
-        #playerInput::placeholder {
-            color: #5a5a7a;
-        }
-
+        #playerInput:focus { border-color: #FFB6C1; background: rgba(255,255,255,0.12); }
         .send-btn {
             background: linear-gradient(135deg, #ff69b4, #ff8c42);
-            border: none;
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 1em;
-            cursor: pointer;
-            min-width: 44px;
+            border: none; color: #fff; padding: 10px 16px;
+            border-radius: 18px; font-weight: 700; font-size: 0.9em;
+            cursor: pointer; min-width: 40px;
         }
-
-        .send-btn:disabled {
-            opacity: 0.4;
-        }
-
+        .send-btn:disabled { opacity: 0.4; }
         .hint-text {
-            text-align: right;
-            color: #5a5a7a;
-            font-size: 0.65em;
-            margin-top: 4px;
+            text-align: right; color: #5a5a7a;
+            font-size: 0.6em; margin-top: 3px;
         }
 
-        /* Подсказка свайпа */
-        .swipe-hint {
-            position: absolute;
-            bottom: 50%;
-            left: 50%;
-            transform: translate(-50%, 50%);
-            color: rgba(255,255,255,0.3);
-            font-size: 1.5em;
-            pointer-events: none;
-            animation: fadeHint 3s forwards;
-            z-index: 3;
+        /* Модалки */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
+            z-index: 100; display: none;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-panel {
+            width: 90%; max-width: 400px; max-height: 80vh;
+            background: rgba(20,20,40,0.95); border-radius: 20px;
+            border: 1px solid rgba(255,182,193,0.3);
+            display: flex; flex-direction: column;
+            animation: slideUp 0.3s ease; color: #ccc;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header {
+            padding: 12px 16px; border-bottom: 1px solid rgba(255,182,193,0.2);
+            display: flex; justify-content: space-between; align-items: center;
+            color: #FFB6C1; font-weight: 700; font-size: 1em;
+        }
+        .modal-close { background: none; border: none; color: #FFB6C1; font-size: 1.2em; cursor: pointer; }
+        .modal-body { padding: 16px; overflow-y: auto; max-height: 60vh; font-size: 0.8em; line-height: 1.6; }
+
+        /* История */
+        .history-entry { margin-bottom: 8px; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.03); border-left: 2px solid transparent; }
+        .history-entry.player { color: #FFB6C1; border-left-color: #FFB6C1; }
+        .history-entry.narrator { color: #a0a0c0; font-style: italic; border-left-color: #a0a0c0; }
+        .history-entry .who { font-weight: 700; font-size: 0.7em; }
+
+        /* Энциклопедия */
+        .encyclopedia-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .char-card {
+            width: 100px; padding: 10px;
+            background: rgba(255,255,255,0.03); border-radius: 12px;
+            border: 1px solid rgba(255,182,193,0.1);
+            text-align: center; cursor: pointer;
+        }
+        .char-card.locked { filter: brightness(0.1) grayscale(1); cursor: not-allowed; }
+        .char-card .card-img { width: 70px; height: 90px; object-fit: contain; margin: 0 auto 5px; display: block; }
+        .char-card .card-name { font-weight: 700; font-size: 0.7em; color: #FFB6C1; }
+        .char-card.locked .card-name { color: #444; }
+        .char-card .card-emoji { font-size: 2em; }
+        .card-new-dot {
+            position: absolute; top: 5px; right: 5px;
+            width: 8px; height: 8px; background: #ff4444;
+            border-radius: 50%; animation: badgePulse 2s infinite;
         }
 
-        @keyframes fadeHint {
-            0%, 70% { opacity: 0.4; }
-            100% { opacity: 0; }
+        /* Детальная карточка */
+        .char-detail-body { display: flex; gap: 12px; align-items: flex-start; }
+        .char-detail-sprite img { width: 100px; max-height: 180px; object-fit: contain; border-radius: 10px; }
+        .char-detail-info { flex: 1; color: #ccc; font-size: 0.8em; }
+        .char-detail-role { color: #FFB6C1; font-weight: 600; }
+        .char-detail-desc { font-size: 0.75em; color: #aaa; margin-bottom: 10px; }
+        .relationship-bar-container { margin-top: 10px; }
+        .relationship-label { font-size: 0.7em; color: #888; }
+        .relationship-bar { position: relative; height: 18px; background: linear-gradient(90deg, #ff4444 0%, #ffaa00 25%, #ffd700 40%, #aaa 50%, #7cfc00 60%, #4caf50 75%, #ff69b4 100%); border-radius: 9px; overflow: hidden; }
+        .relationship-fill { position: absolute; top: 0; right: 0; height: 100%; background: rgba(0,0,0,0.6); transition: width 0.5s; }
+        .relationship-emoji { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.9em; }
+        .relationship-value { text-align: center; font-weight: 700; font-size: 0.8em; margin-top: 3px; }
+
+        /* Уведомление */
+        .unlock-notification {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff; padding: 10px 20px; border-radius: 20px;
+            font-size: 0.8em; font-weight: 700; z-index: 300;
+            animation: notifIn 0.5s ease, notifOut 0.5s 3.5s forwards;
+            white-space: nowrap;
         }
+        @keyframes notifIn { from { opacity: 0; transform: translateX(-50%) translateY(-40px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes notifOut { from { opacity: 1; } to { opacity: 0; } }
     </style>
 </head>
 <body>
     <div class="novel-container">
-        <!-- Вьюпорт с камерой -->
+        <!-- Сцена -->
         <div class="scene-viewport" id="sceneViewport">
             <div class="scene-background bg-classroom" id="sceneBg"></div>
             <div class="vignette"></div>
+            <div class="sprites-layer" id="spritesLayer"></div>
+            <div class="location-tag" id="locationTag">📍 Загрузка...</div>
 
-            <!-- Спрайты -->
-            <div class="sprites-layer" id="spritesLayer">
-                <!-- Слоты для всех 12 персонажей -->
+            <!-- Бургер -->
+            <div class="burger-btn" id="burgerBtn" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
             </div>
 
-            <div class="location-tag" id="locationTag">📍 Загрузка...</div>
-            <div class="swipe-hint" id="swipeHint">← свайп →</div>
+            <!-- Выпадающее меню -->
+            <div class="slide-menu" id="slideMenu">
+                <button onclick="openPanel('history')">📜 История</button>
+                <button onclick="openPanel('encyclopedia')">📖 Энциклопедия <span class="badge-dot" id="menuBadge" style="display:none;"></span></button>
+                <button onclick="openPanel('settings')">⚙️ Настройки</button>
+                <button onclick="openPanel('faq')">❓ FAQ</button>
+                <button onclick="openPanel('bug')">🐛 Баг-репорт</button>
+                <button onclick="goToMenu()">🏠 В меню</button>
+            </div>
         </div>
 
         <!-- Текст -->
         <div class="text-box" id="textBox">
             <div class="speaker-tag" id="speakerTag"><span id="speakerTagName"></span></div>
             <div class="narrator-line" id="narratorLine"></div>
-            <div class="dialogue-line" id="dialogueLine">
-                <span id="typingText"></span><span class="typing-cursor" id="typingCursor"></span>
-            </div>
+            <div class="dialogue-line" id="dialogueLine"><span id="typingText"></span><span class="typing-cursor" id="typingCursor"></span></div>
             <div class="input-row">
                 <input type="text" id="playerInput" placeholder="Действие или реплика..." maxlength="150" autocomplete="off" disabled>
                 <button class="send-btn" id="sendBtn" disabled>▶</button>
@@ -329,159 +298,198 @@
         </div>
     </div>
 
+    <!-- Модалки -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closePanel()">
+        <div class="modal-panel" id="modalPanel" onclick="event.stopPropagation()">
+            <div class="modal-header"><span id="modalTitle"></span><button class="modal-close" onclick="closePanel()">✕</button></div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notificationContainer"></div>
+
     <script>
-        // ==================== MOBILE GAME ENGINE ====================
         const sessionId = new URLSearchParams(window.location.search).get('session');
+        let gameData = null, currentScene = null, isTyping = false, typingTimer = null, waitingForInput = true;
+        let encyclopediaData = {}, hasNewDiscovery = false, currentCharDetail = null;
+        const EMOTION_ICONS = {'радость':'😊','грусть':'😢','злость':'😠','удивление':'😲','нейтрально':'😐','смущение':'😳','восторг':'🤩','happy':'😊','sad':'😢','angry':'😠','surprised':'😲','normal':'😐','excited':'🤩','serious':'🧐','shy':'😳','flirty':'😏','worried':'😟','proud':'😤'};
+        const CHAR_COLORS = {'garfild':'#ff8c42','monika':'#ff69b4','reiko':'#00d4aa','yuki':'#b8a9d4','takeshi':'#ff4444','hana':'#4da6ff','haru':'#ffd700','akira':'#7cfc00','sensei':'#deb887','yumi':'#ff9999','ryuu':'#808080','emi':'#ff1493'};
+        const CHAR_NAMES = {'garfild':'Гарфилд','monika':'Моника','reiko':'Рейко','yuki':'Юки','takeshi':'Такеши','hana':'Хана','haru':'Хару','akira':'Акира','sensei':'Танака-сенсей','yumi':'Юми','ryuu':'Рю','emi':'Эми'};
+        const CHAR_EMOJIS = {'garfild':'📋','monika':'📚','reiko':'🏃‍♀️','yuki':'🎨','takeshi':'👊','hana':'👑','haru':'😄','akira':'💻','sensei':'👨‍🏫','yumi':'💉','ryuu':'⚔️','emi':'📰'};
+        const SPRITE_FILES = {'garfild':'boy_garfild','monika':'girl_monika','reiko':'girl_reiko','yuki':'girl_yuki','takeshi':'boy_takeshi','hana':'girl_hana','haru':'boy_haru','akira':'boy_akira','sensei':'boy_sensei','yumi':'girl_yumi','ryuu':'boy_ryuu','emi':'girl_emi'};
 
-        // Состояния
-        let gameData = null;
-        let isTyping = false;
-        let typingTimer = null;
-        let waitingForInput = true;
-        let cameraX = 0; // Позиция камеры (0 = левый край, 1 = правый)
-        let targetCameraX = 0.5; // Куда камера стремится
-        let isSwiping = false;
-        let swipeStartX = 0;
-        let swipeStartCamera = 0;
-        let dialogueInProgress = false; // Идёт ли диалог (блокирует свайп)
-
-        const SPRITE_SLOTS = [
-            { id: 'garfild', pos: 0.1, name: '📋 Гарфилд', color: '#ff8c42' },
-            { id: 'monika', pos: 0.25, name: '📚 Моника', color: '#ff69b4' },
-            { id: 'reiko', pos: 0.4, name: '🏃‍♀️ Рейко', color: '#00d4aa' },
-            { id: 'yuki', pos: 0.5, name: '🎨 Юки', color: '#b8a9d4' },
-            { id: 'takeshi', pos: 0.55, name: '👊 Такеши', color: '#ff4444' },
-            { id: 'hana', pos: 0.6, name: '👑 Хана', color: '#4da6ff' },
-            { id: 'haru', pos: 0.65, name: '😄 Хару', color: '#ffd700' },
-            { id: 'akira', pos: 0.7, name: '💻 Акира', color: '#7cfc00' },
-            { id: 'sensei', pos: 0.75, name: '👨‍🏫 Сенсей', color: '#deb887' },
-            { id: 'yumi', pos: 0.8, name: '💉 Юми', color: '#ff9999' },
-            { id: 'ryuu', pos: 0.85, name: '⚔️ Рю', color: '#808080' },
-            { id: 'emi', pos: 0.9, name: '📰 Эми', color: '#ff1493' }
-        ];
-
-        // ==================== ИНИЦИАЛИЗАЦИЯ СПРАЙТОВ ====================
-        function createSpriteSlots() {
+        // Спрайты
+        function createSprites() {
+            const chars = ['garfild','monika','reiko','yuki','takeshi','hana','haru','akira','sensei','yumi','ryuu','emi'];
             const layer = document.getElementById('spritesLayer');
-            SPRITE_SLOTS.forEach(slot => {
+            chars.forEach(id => {
                 const div = document.createElement('div');
-                div.className = 'sprite-slot hidden';
-                div.id = `slot-${slot.id}`;
-                div.style.left = (slot.pos * 100) + '%';
-                div.innerHTML = `
-                    <img src="/static/images/sprites/${getSpriteFile(slot.id)}" alt="${slot.name}">
-                    <div class="sprite-name-tag">${slot.name}</div>
-                `;
+                div.className = 'sprite-slot'; div.id = 'slot-' + id;
+                div.innerHTML = `<img src="/static/images/sprites/${SPRITE_FILES[id]}.png" alt="${CHAR_NAMES[id]}"><div class="sprite-name-tag">${CHAR_EMOJIS[id]} ${CHAR_NAMES[id]}</div>`;
                 layer.appendChild(div);
             });
         }
-
-        function getSpriteFile(id) {
-            const map = {
-                'garfild': 'boy_garfild.png', 'monika': 'girl_monika.png', 'reiko': 'girl_reiko.png',
-                'yuki': 'girl_yuki.png', 'takeshi': 'boy_takeshi.png', 'hana': 'girl_hana.png',
-                'haru': 'boy_haru.png', 'akira': 'boy_akira.png', 'sensei': 'boy_sensei.png',
-                'yumi': 'girl_yumi.png', 'ryuu': 'boy_ryuu.png', 'emi': 'girl_emi.png'
-            };
-            return map[id] || 'boy_garfild.png';
-        }
-
-        // ==================== КАМЕРА ====================
-        function updateCamera() {
-            const bg = document.getElementById('sceneBg');
-            const sprites = document.getElementById('spritesLayer');
-            // Сдвигаем фон и спрайты
-            const offset = -cameraX * 200; // 300vw total, двигаемся на 200vw
-            bg.style.transform = `translateX(${offset}vw)`;
-            sprites.style.transform = `translateX(${offset}vw)`;
-        }
-
-        function focusOnSpeaker(speakerId) {
-            const slot = SPRITE_SLOTS.find(s => s.id === speakerId);
-            if (slot) {
-                targetCameraX = slot.pos;
-                dialogueInProgress = true;
-            }
-        }
-
-        function releaseCamera() {
-            dialogueInProgress = false;
-            // Возвращаем камеру в центр через 2 сек
-            setTimeout(() => {
-                if (!dialogueInProgress) {
-                    targetCameraX = 0.5;
+        function updateSprites(s) {
+            if (!s) return;
+            Object.keys(s).forEach(id => {
+                const el = document.getElementById('slot-' + id);
+                if (!el) return;
+                if (s[id] && s[id].visible) {
+                    el.classList.add('visible');
+                    s[id].highlight ? el.classList.add('highlighted') : el.classList.remove('highlighted');
+                } else {
+                    el.classList.remove('visible', 'highlighted');
                 }
-            }, 2000);
+            });
         }
-
-        function animateCamera() {
-            // Плавное движение камеры
-            cameraX += (targetCameraX - cameraX) * 0.1;
-            if (Math.abs(targetCameraX - cameraX) < 0.001) {
-                cameraX = targetCameraX;
-            }
-            updateCamera();
-            requestAnimationFrame(animateCamera);
-        }
-
-        // ==================== СВАЙПЫ ====================
-        const viewport = document.getElementById('sceneViewport');
-
-        viewport.addEventListener('touchstart', (e) => {
-            if (dialogueInProgress || isTyping) return;
-            isSwiping = true;
-            swipeStartX = e.touches[0].clientX;
-            swipeStartCamera = targetCameraX;
-        }, { passive: true });
-
-        viewport.addEventListener('touchmove', (e) => {
-            if (!isSwiping || dialogueInProgress || isTyping) return;
-            const dx = e.touches[0].clientX - swipeStartX;
-            const viewportWidth = viewport.offsetWidth;
-            const cameraDelta = -(dx / viewportWidth) * 0.5;
-            targetCameraX = Math.max(0, Math.min(1, swipeStartCamera + cameraDelta));
-        }, { passive: true });
-
-        viewport.addEventListener('touchend', () => {
-            isSwiping = false;
-        });
-
-        // ==================== ТЕКСТ ====================
-        async function loadGame() {
-            if (!sessionId) return;
-            try {
-                const resp = await fetch(`/api/load_game_data?session=${sessionId}`);
-                const data = await resp.json();
-                if (data.success) {
-                    gameData = data.game;
-                    document.getElementById('locationTag').textContent = '📍 ' + data.game.location_name;
-                    updateBackground(data.game.current_location);
-                    if (gameData.game_history.length > 0) {
-                        await displayScene(gameData.game_history[gameData.game_history.length - 1]);
-                    }
-                    enableInput();
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
         function updateBackground(loc) {
             const bg = document.getElementById('sceneBg');
             bg.className = 'scene-background';
-            const map = {
-                'classroom': 'bg-classroom', 'rooftop': 'bg-rooftop', 'library': 'bg-library',
-                'courtyard': 'bg-courtyard', 'cafeteria': 'bg-cafeteria', 'gym': 'bg-gym',
-                'clubroom': 'bg-clubroom', 'nursery': 'bg-nursery', 'park': 'bg-park',
-                'mall': 'bg-mall', 'beach': 'bg-beach', 'shrine': 'bg-shrine',
-                'hallway': 'bg-hallway', 'gate': 'bg-gate', 'classroom_evening': 'bg-classroom-evening'
-            };
+            const map = {'classroom':'bg-classroom','rooftop':'bg-rooftop','library':'bg-library','courtyard':'bg-courtyard','cafeteria':'bg-cafeteria','gym':'bg-gym','clubroom':'bg-clubroom','nursery':'bg-nursery','park':'bg-park','mall':'bg-mall','beach':'bg-beach','shrine':'bg-shrine','hallway':'bg-hallway','gate':'bg-gate','classroom_evening':'bg-classroom-evening'};
             bg.classList.add(map[loc] || 'bg-classroom');
         }
 
+        // Меню
+        function toggleMenu() {
+            const menu = document.getElementById('slideMenu');
+            const btn = document.getElementById('burgerBtn');
+            const isOpen = menu.classList.contains('open');
+            if (isOpen) {
+                menu.classList.remove('open');
+                btn.classList.remove('open');
+            } else {
+                menu.classList.add('open');
+                btn.classList.add('open');
+            }
+        }
+        function closeMenu() {
+            document.getElementById('slideMenu').classList.remove('open');
+            document.getElementById('burgerBtn').classList.remove('open');
+        }
+
+        // Панели
+        let currentPanel = null;
+        function openPanel(type) {
+            closeMenu();
+            currentPanel = type;
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            overlay.classList.add('open');
+
+            if (type === 'history') {
+                title.textContent = '📜 История';
+                body.innerHTML = '<div style="color:#666;">Загрузка...</div>';
+                showHistory();
+            } else if (type === 'encyclopedia') {
+                title.textContent = '📖 Энциклопедия';
+                body.innerHTML = '<div class="encyclopedia-grid" id="encyclopediaGrid"><div style="color:#666;">Загрузка...</div></div>';
+                loadEncyclopediaPanel();
+            } else if (type === 'settings') {
+                title.textContent = '⚙️ Настройки';
+                body.innerHTML = 'Настройки пока недоступны на мобильной версии.';
+            } else if (type === 'faq') {
+                title.textContent = '❓ FAQ';
+                body.innerHTML = '<p><b>Как играть?</b> Пиши действия в поле ввода.</p><p><b>Скип текста?</b> Тап по текстовому полю.</p>';
+            } else if (type === 'bug') {
+                title.textContent = '🐛 Баг-репорт';
+                body.innerHTML = '<p>Опишите баг:</p><textarea style="width:100%;height:80px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,182,193,0.3);color:#fff;border-radius:8px;padding:8px;"></textarea><button style="margin-top:8px;padding:8px 16px;background:linear-gradient(135deg,#ff69b4,#ff8c42);border:none;color:#fff;border-radius:10px;width:100%;">Отправить</button>';
+            }
+        }
+        function closePanel() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            currentPanel = null;
+        }
+
+        // История
+        function showHistory() {
+            if (!gameData || !gameData.game_history) return;
+            const body = document.getElementById('modalBody');
+            body.innerHTML = gameData.game_history.map(scene => {
+                if (scene.type === 'player_action') return `<div class="history-entry player"><div class="who">🗣️ Ты:</div><div>${scene.player_text}</div></div>`;
+                else if (scene.speaker_id === 'narrator' || !scene.speaker_id) return `<div class="history-entry narrator">📖 ${scene.speaker_text || scene.narrator_text || ''}</div>`;
+                else return `<div class="history-entry" style="border-left-color:${CHAR_COLORS[scene.speaker_id]||'#fff'}"><div class="who">${CHAR_EMOJIS[scene.speaker_id]||''} ${scene.speaker_name||scene.speaker_id}:</div><div>${scene.speaker_text||''}</div></div>`;
+            }).join('');
+        }
+
+        // Энциклопедия
+        async function loadEncyclopediaPanel() {
+            try {
+                const r = await fetch('/api/encyclopedia?session=' + sessionId);
+                const d = await r.json();
+                if (d.success) {
+                    encyclopediaData = d.characters;
+                    hasNewDiscovery = d.has_new;
+                    document.getElementById('menuBadge').style.display = d.has_new ? 'inline-block' : 'none';
+                    renderEncyclopediaGrid();
+                }
+            } catch (e) {}
+        }
+        function renderEncyclopediaGrid() {
+            const grid = document.getElementById('encyclopediaGrid');
+            if (!grid) return;
+            const chars = Object.values(encyclopediaData);
+            grid.innerHTML = chars.map(c => `
+                <div class="char-card ${c.unlocked?'':'locked'}" onclick="${c.unlocked?`viewCharacter('${c.id}')`:''}" style="position:relative;">
+                    ${c.unlocked && !c.viewed ? '<div class="card-new-dot"></div>' : ''}
+                    ${c.unlocked ? `<img src="/static/images/sprites/${c.sprite}.png" class="card-img">` : `<div class="card-emoji">❓</div>`}
+                    <div class="card-name">${c.unlocked ? c.emoji+' '+c.name : '???'}</div>
+                </div>
+            `).join('');
+        }
+        function viewCharacter(charId) {
+            fetch('/api/encyclopedia/view', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,char_id:charId})});
+            if (encyclopediaData[charId]) {
+                encyclopediaData[charId].viewed = true;
+                currentCharDetail = encyclopediaData[charId];
+                showCharDetail();
+            }
+            hasNewDiscovery = Object.values(encyclopediaData).some(c => c.unlocked && !c.viewed);
+            document.getElementById('menuBadge').style.display = hasNewDiscovery ? 'inline-block' : 'none';
+            renderEncyclopediaGrid();
+        }
+        function showCharDetail() {
+            const c = currentCharDetail;
+            if (!c) return;
+            const body = document.getElementById('modalBody');
+            const val = c.relationship || 0;
+            const percent = ((val + 100) / 200) * 100;
+            let emoji = '😐';
+            if (val <= -75) emoji = '😡'; else if (val <= -50) emoji = '😠'; else if (val <= -25) emoji = '😒'; else if (val <= -5) emoji = '😕'; else if (val <= 5) emoji = '😐'; else if (val <= 25) emoji = '🙂'; else if (val <= 50) emoji = '😊'; else if (val <= 75) emoji = '😍'; else emoji = '🥰';
+            body.innerHTML = `
+                <div class="char-detail-body">
+                    <div class="char-detail-sprite"><img src="/static/images/sprites/${c.sprite}.png"></div>
+                    <div class="char-detail-info">
+                        <div class="char-detail-role">${c.emoji} ${c.name}</div>
+                        <div>${c.role || ''}</div>
+                        <div class="char-detail-desc">${c.personality || ''}</div>
+                        <div class="relationship-bar-container">
+                            <div class="relationship-label">Отношение:</div>
+                            <div class="relationship-bar"><div class="relationship-fill" style="width:${100-percent}%;left:${percent}%;"></div><div class="relationship-emoji">${emoji}</div></div>
+                            <div class="relationship-value" style="color:${val<-10?'#ff4444':val>10?'#4caf50':'#aaa'}">${val>0?'+':''}${val}</div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        // Игра
+        async function loadGame() {
+            if (!sessionId) return;
+            try {
+                const r = await fetch('/api/load_game_data?session=' + sessionId);
+                const d = await r.json();
+                if (d.success) {
+                    gameData = d.game;
+                    document.getElementById('locationTag').textContent = '📍 ' + d.game.location_name;
+                    updateBackground(d.game.current_location);
+                    if (gameData.game_history.length) await displayScene(gameData.game_history[gameData.game_history.length - 1]);
+                    enableInput();
+                }
+            } catch (e) { console.error(e); }
+        }
         async function typeText(el, text, speed = 35) {
-            isTyping = true;
-            el.textContent = '';
+            isTyping = true; el.textContent = '';
             document.getElementById('typingCursor').style.display = 'inline-block';
             disableInput();
             return new Promise(resolve => {
@@ -489,167 +497,120 @@
                 function type() {
                     if (i < text.length) {
                         el.textContent += text[i++];
-                        const delay = (text[i-1] === '.' || text[i-1] === '!') ? speed*4 : speed;
+                        const delay = (text[i-1] === '.' || text[i-1] === '!') ? speed*4 : speed + Math.random()*10;
                         typingTimer = setTimeout(type, delay);
                     } else {
                         document.getElementById('typingCursor').style.display = 'none';
-                        isTyping = false;
-                        resolve();
+                        isTyping = false; resolve();
                     }
                 }
                 type();
             });
         }
-
         function skipTyping() {
             if (isTyping && typingTimer) {
-                clearTimeout(typingTimer);
-                isTyping = false;
+                clearTimeout(typingTimer); isTyping = false;
+                const el = document.getElementById('typingText');
+                if (currentScene) el.textContent = currentScene.type === 'player_action' ? '🗣️ ' + currentScene.player_text : (currentScene.speaker_text || '');
                 document.getElementById('typingCursor').style.display = 'none';
+                enableInput();
             }
         }
-
-        function updateSprites(sprites) {
-            if (!sprites) return;
-            Object.keys(sprites).forEach(id => {
-                const slot = document.getElementById(`slot-${id}`);
-                if (!slot) return;
-                const cfg = sprites[id];
-                if (cfg && cfg.visible) {
-                    slot.classList.remove('hidden');
-                    slot.classList.add('visible');
-                    if (cfg.highlight) {
-                        slot.classList.add('highlighted');
-                        focusOnSpeaker(id);
-                    } else {
-                        slot.classList.remove('highlighted');
-                    }
-                } else {
-                    slot.classList.add('hidden');
-                    slot.classList.remove('visible', 'highlighted');
-                }
-            });
-        }
-
         async function displayScene(scene) {
+            currentScene = scene;
             document.getElementById('speakerTag').style.display = 'none';
             document.getElementById('narratorLine').textContent = '';
             document.getElementById('typingText').textContent = '';
-
             disableInput();
-
             if (scene.type === 'player_action') {
                 document.getElementById('typingText').style.color = '#FFB6C1';
                 document.getElementById('typingCursor').style.display = 'inline-block';
                 await typeText(document.getElementById('typingText'), '🗣️ ' + scene.player_text, 12);
-                enableInput();
-                return;
+                enableInput(); return;
             }
-
             if (scene.sprites) updateSprites(scene.sprites);
             if (scene.location) {
                 updateBackground(scene.location);
                 document.getElementById('locationTag').textContent = '📍 ' + (scene.location || '');
             }
-            if (scene.narrator_text) {
-                document.getElementById('narratorLine').textContent = scene.narrator_text;
-            }
-
-            const speakerId = scene.speaker_id || 'narrator';
-            if (speakerId !== 'narrator') {
+            if (scene.narrator_text) document.getElementById('narratorLine').textContent = scene.narrator_text;
+            const sid = scene.speaker_id || 'narrator';
+            if (sid !== 'narrator') {
                 document.getElementById('speakerTag').style.display = 'block';
                 const tag = document.getElementById('speakerTagName');
-                tag.textContent = scene.speaker_name || speakerId;
-                tag.style.background = SPRITE_SLOTS.find(s => s.id === speakerId)?.color || '#fff';
+                tag.textContent = scene.speaker_name || CHAR_NAMES[sid] || sid;
+                tag.style.background = CHAR_COLORS[sid] || '#fff';
                 tag.style.color = '#000';
             }
-
-            const text = scene.speaker_text || '...';
-            document.getElementById('typingText').style.color = speakerId === 'narrator' ? '#c0c0c0' : '#fff';
+            document.getElementById('typingText').style.color = sid === 'narrator' ? '#c0c0c0' : '#fff';
             document.getElementById('typingCursor').style.display = 'inline-block';
-            await typeText(document.getElementById('typingText'), text);
-
-            if (scene.dialog_end_marker === 'direct_question_to_player') {
-                releaseCamera();
+            await typeText(document.getElementById('typingText'), scene.speaker_text || '...');
+            if (scene._new_discovery && scene._new_discovery.length) {
+                scene._new_discovery.forEach(cid => showDiscoveryNotification(cid));
             }
-
-            enableInput();
-            setTimeout(releaseCamera, 1500);
+            waitingForInput = true; enableInput();
         }
-
         function enableInput() {
             document.getElementById('playerInput').disabled = false;
             document.getElementById('sendBtn').disabled = false;
             waitingForInput = true;
-            setTimeout(() => document.getElementById('playerInput').focus(), 100);
+            setTimeout(() => { if (!isTyping) document.getElementById('playerInput').focus(); }, 100);
         }
-
         function disableInput() {
             document.getElementById('playerInput').disabled = true;
             document.getElementById('sendBtn').disabled = true;
             waitingForInput = false;
         }
-
         async function sendAction() {
-            if (isTyping) { skipTyping(); enableInput(); return; }
+            if (isTyping) { skipTyping(); return; }
             if (!waitingForInput) return;
-
-            const input = document.getElementById('playerInput');
-            const action = input.value.trim();
+            const inp = document.getElementById('playerInput');
+            const action = inp.value.trim();
             if (!action) return;
-
-            input.value = '';
-            disableInput();
-            await displayScene({ type: 'player_action', player_text: action });
-
+            inp.value = ''; disableInput();
+            const playerScene = { type: 'player_action', player_text: action };
+            if (gameData) gameData.game_history.push(playerScene);
+            await displayScene(playerScene);
             try {
-                const resp = await fetch('/api/game_action', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ session_id: sessionId, action })
-                });
-                const data = await resp.json();
-                if (data.success && data.scene) {
-                    await new Promise(r => setTimeout(r, 500));
-                    await displayScene(data.scene);
+                const r = await fetch('/api/game_action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sessionId, action }) });
+                const d = await r.json();
+                if (d.success && d.scene) {
+                    if (gameData) gameData.game_history.push(d.scene);
+                    await new Promise(rs => setTimeout(rs, 500));
+                    await displayScene(d.scene);
+                    await loadEncyclopediaPanel();
                 }
-            } catch (e) {
-                console.error(e);
-                enableInput();
+            } catch (e) { console.error(e); enableInput(); }
+        }
+        function goToMenu() {
+            if (confirm('Вернуться в меню?')) {
+                fetch('/api/saves/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sessionId }) });
+                window.location.href = '/';
             }
         }
+        function showDiscoveryNotification(charId) {
+            const d = encyclopediaData[charId];
+            if (!d) return;
+            const n = document.createElement('div');
+            n.className = 'unlock-notification';
+            n.innerHTML = `✨ Вы встретили <b>${d.name}</b>!`;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 4000);
+        }
 
-        // ==================== ОБРАБОТЧИКИ ====================
-        document.getElementById('playerInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); sendAction(); }
-        });
-
-        document.getElementById('sendBtn').addEventListener('click', e => {
-            e.preventDefault(); sendAction();
-        });
-
+        // Обработчики
+        document.getElementById('playerInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendAction(); } });
+        document.getElementById('sendBtn').addEventListener('click', e => { e.preventDefault(); sendAction(); });
         document.getElementById('textBox').addEventListener('click', e => {
-            if (isTyping && e.target.id !== 'playerInput' && e.target.id !== 'sendBtn') {
-                skipTyping();
-                enableInput();
-            }
+            if (isTyping && e.target.id !== 'playerInput' && e.target.id !== 'sendBtn') { skipTyping(); }
         });
-
-        // ==================== СТАРТ ====================
-        window.addEventListener('DOMContentLoaded', () => {
-            createSpriteSlots();
-            // Начальная позиция камеры
-            cameraX = 0.5;
-            targetCameraX = 0.5;
-            updateCamera();
-            requestAnimationFrame(animateCamera);
-
-            // Убираем подсказку свайпа через 5 сек
-            setTimeout(() => {
-                document.getElementById('swipeHint').style.display = 'none';
-            }, 5000);
-
+        document.addEventListener('DOMContentLoaded', () => {
+            createSprites();
             loadGame();
+            // Грузим энциклопедию для бейджа
+            fetch('/api/encyclopedia?session=' + sessionId).then(r => r.json()).then(d => {
+                if (d.success) { encyclopediaData = d.characters; hasNewDiscovery = d.has_new; document.getElementById('menuBadge').style.display = d.has_new ? 'inline-block' : 'none'; }
+            });
         });
     </script>
 </body>
