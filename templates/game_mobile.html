@@ -8,20 +8,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Comfortaa', sans-serif; height: 100dvh; overflow: hidden; background: #000; user-select: none; -webkit-user-select: none; position: fixed; width: 100%; touch-action: pan-x; }
-
         .novel-container { width: 100%; height: 100dvh; display: flex; flex-direction: column; }
         .scene-viewport { flex: 1; position: relative; overflow: hidden; min-height: 45%; }
-
-        /* Фон — реальный размер, без повторения, двигается свайпом */
-        .scene-background {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-size: cover; background-position: center;
-            background-repeat: no-repeat;
-            transition: background-image 0.5s ease;
-            z-index: 0;
-            will-change: transform;
-        }
+        .scene-background { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; background-repeat: no-repeat; transition: background-image 0.5s ease; z-index: 0; will-change: transform; }
         .bg-classroom { background-image: url('/static/images/backgrounds/bg_classroom.png'); }
         .bg-rooftop { background-image: url('/static/images/backgrounds/bg_rooftop.png'); }
         .bg-library { background-image: url('/static/images/backgrounds/bg_library.png'); }
@@ -37,10 +26,7 @@
         .bg-hallway { background-image: url('/static/images/backgrounds/bg_hallway.png'); }
         .bg-gate { background-image: url('/static/images/backgrounds/bg_gate.png'); }
         .bg-classroom-evening { background-image: url('/static/images/backgrounds/bg_classroom_evening.png'); }
-
         .vignette { position: absolute; bottom: 0; left: 0; width: 100%; height: 35%; background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%); z-index: 2; pointer-events: none; }
-
-        /* Спрайты */
         .sprites-layer { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; z-index: 1; display: flex; justify-content: center; align-items: flex-end; gap: 8px; padding: 0 3%; }
         .sprite-slot { display: none; transition: all 0.5s ease; filter: brightness(0.7) saturate(0.8); flex-shrink: 0; position: relative; }
         .sprite-slot.visible { display: block; }
@@ -48,29 +34,21 @@
         .sprite-slot img { max-height: 45vh; max-width: 30vw; min-width: 70px; object-fit: contain; object-position: bottom; }
         .sprite-name-tag { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 2px 8px; border-radius: 8px; font-size: 0.6em; white-space: nowrap; opacity: 0; transition: opacity 0.3s; }
         .sprite-slot.highlighted .sprite-name-tag { opacity: 1; }
-
         .location-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #FFB6C1; padding: 6px 12px; border-radius: 12px; font-size: 0.7em; letter-spacing: 1px; z-index: 5; }
-
-        /* Подсказка свайпа */
         .swipe-hint { position: absolute; bottom: 40%; left: 50%; transform: translate(-50%,50%); color: rgba(255,255,255,0.25); font-size: 1.2em; pointer-events: none; animation: fadeHint 3s forwards; z-index: 3; }
         @keyframes fadeHint { 0%,60% { opacity: 0.5; } 100% { opacity: 0; } }
-
-        /* Бургер */
         .burger-btn { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,182,193,0.3); border-radius: 8px; z-index: 20; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; cursor: pointer; }
         .burger-btn span { display: block; width: 20px; height: 2px; background: #FFB6C1; border-radius: 1px; transition: all 0.3s; }
         .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(4px,4px); }
         .burger-btn.open span:nth-child(2) { opacity: 0; }
         .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(4px,-4px); }
-
         .slide-menu { position: absolute; top: 52px; right: 10px; background: rgba(20,20,40,0.95); border-radius: 15px; border: 1px solid rgba(255,182,193,0.3); padding: 8px 0; z-index: 25; display: none; flex-direction: column; min-width: 170px; backdrop-filter: blur(10px); animation: menuIn 0.2s ease; }
         .slide-menu.open { display: flex; }
         @keyframes menuIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .slide-menu button { background: none; border: none; color: #FFB6C1; padding: 10px 16px; text-align: left; font-family: 'Comfortaa', sans-serif; font-size: 0.8em; cursor: pointer; transition: background 0.2s; letter-spacing: 1px; }
-        .slide-menu button:hover { background: rgba(255,105,180,0.2); }
+        .slide-menu button { background: none; border: none; color: #FFB6C1; padding: 10px 16px; text-align: left; font-family: 'Comfortaa', sans-serif; font-size: 0.8em; cursor: pointer; transition: background 0.2s; letter-spacing: 1px; pointer-events: auto; }
+        .slide-menu button:active { background: rgba(255,105,180,0.3); }
         .badge-dot { display: inline-block; width: 8px; height: 8px; background: #ff4444; border-radius: 50%; margin-left: 6px; animation: badgePulse 2s infinite; }
         @keyframes badgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.7); } 50% { box-shadow: 0 0 0 6px rgba(255,68,68,0); } }
-
-        /* Текст */
         .text-box { background: linear-gradient(180deg, rgba(10,10,20,0.9) 0%, rgba(10,10,20,0.98) 100%); padding: 10px 12px 16px; border-top: 1px solid rgba(255,182,193,0.2); z-index: 10; backdrop-filter: blur(10px); }
         .speaker-tag { display: none; margin-bottom: 4px; }
         .speaker-tag span { display: inline-block; padding: 3px 12px; border-radius: 10px; font-weight: 700; font-size: 0.75em; letter-spacing: 1px; }
@@ -84,43 +62,33 @@
         .send-btn { background: linear-gradient(135deg, #ff69b4, #ff8c42); border: none; color: #fff; padding: 10px 16px; border-radius: 18px; font-weight: 700; font-size: 0.9em; cursor: pointer; min-width: 40px; }
         .send-btn:disabled { opacity: 0.4; }
         .hint-text { text-align: right; color: #5a5a7a; font-size: 0.6em; margin-top: 3px; }
-
-        /* Модалки */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100; display: none; justify-content: center; align-items: center; }
         .modal-overlay.open { display: flex; }
-        .modal-panel { width: 92%; max-width: 400px; max-height: 80vh; background: rgba(20,20,40,0.95); border-radius: 20px; border: 1px solid rgba(255,182,193,0.3); display: flex; flex-direction: column; animation: slideUp 0.3s ease; color: #ccc; }
+        .modal-panel { width: 92%; max-width: 400px; max-height: 85vh; background: rgba(20,20,40,0.95); border-radius: 20px; border: 1px solid rgba(255,182,193,0.3); display: flex; flex-direction: column; animation: slideUp 0.3s ease; color: #ccc; overflow: hidden; }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .modal-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,182,193,0.2); display: flex; justify-content: space-between; align-items: center; color: #FFB6C1; font-weight: 700; font-size: 1em; }
-        .modal-close { background: none; border: none; color: #FFB6C1; font-size: 1.2em; cursor: pointer; }
-        .modal-body { padding: 16px; overflow-y: auto; max-height: 60vh; font-size: 0.8em; line-height: 1.6; }
-
-        /* FAQ */
+        .modal-header { padding: 12px 16px; border-bottom: 1px solid rgba(255,182,193,0.2); display: flex; justify-content: space-between; align-items: center; color: #FFB6C1; font-weight: 700; font-size: 1em; flex-shrink: 0; }
+        .modal-close { background: none; border: none; color: #FFB6C1; font-size: 1.2em; cursor: pointer; pointer-events: auto; }
+        .modal-body { padding: 16px; overflow-y: auto; max-height: 65vh; font-size: 0.8em; line-height: 1.6; -webkit-overflow-scrolling: touch; }
         .faq-q { color: #FFB6C1; font-weight: 700; margin: 8px 0 3px; }
         .faq-a { color: #bbb; margin-bottom: 8px; }
         .faq-example { background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 8px; margin: 3px 0; font-style: italic; color: #aaa; font-size: 0.9em; }
-
-        /* Настройки */
         .setting-row { margin: 8px 0; }
         .setting-row label { display: block; color: #aaa; font-size: 0.75em; margin-bottom: 3px; }
         .setting-row input[type=range] { width: 100%; accent-color: #FFB6C1; }
         .preview-box { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin: 5px 0; transition: font-size 0.3s; }
         .value-tag { color: #FFB6C1; font-weight: 600; float: right; }
-
-        /* История */
         .history-entry { margin-bottom: 6px; padding: 5px 8px; border-radius: 6px; background: rgba(255,255,255,0.03); border-left: 2px solid transparent; font-size: 0.75em; }
         .history-entry.player { color: #FFB6C1; border-left-color: #FFB6C1; }
         .history-entry.narrator { color: #a0a0c0; font-style: italic; border-left-color: #a0a0c0; }
-
-        /* Энциклопедия */
         .encyclopedia-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-        .char-card { width: 90px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,182,193,0.1); text-align: center; cursor: pointer; position: relative; }
-        .char-card.locked { filter: brightness(0.1) grayscale(1); cursor: not-allowed; }
+        .char-card { width: 90px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid rgba(255,182,193,0.1); text-align: center; cursor: pointer; position: relative; pointer-events: auto; }
+        .char-card:active { background: rgba(255,105,180,0.15); }
+        .char-card.locked { filter: brightness(0.1) grayscale(1); cursor: default; pointer-events: none; }
         .char-card .card-img { width: 60px; height: 80px; object-fit: contain; margin: 0 auto 4px; display: block; }
         .char-card .card-name { font-weight: 700; font-size: 0.65em; color: #FFB6C1; }
         .char-card.locked .card-name { color: #444; }
         .char-card .card-emoji { font-size: 1.8em; }
         .card-new-dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; background: #ff4444; border-radius: 50%; animation: badgePulse 2s infinite; }
-
         .char-detail-body { display: flex; gap: 10px; align-items: flex-start; }
         .char-detail-sprite img { width: 90px; max-height: 160px; object-fit: contain; border-radius: 8px; }
         .char-detail-info { flex: 1; color: #ccc; font-size: 0.75em; }
@@ -132,7 +100,6 @@
         .rel-fill { position: absolute; top: 0; right: 0; height: 100%; background: rgba(0,0,0,0.6); transition: width 0.5s; }
         .rel-emoji { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 0.8em; }
         .rel-val { text-align: center; font-weight: 700; font-size: 0.7em; margin-top: 2px; }
-
         .unlock-notification { position: fixed; top: 15px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 0.8em; font-weight: 700; z-index: 300; animation: notifIn 0.5s ease, notifOut 0.5s 3.5s forwards; white-space: nowrap; }
         @keyframes notifIn { from { opacity: 0; transform: translateX(-50%) translateY(-40px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes notifOut { from { opacity: 1; } to { opacity: 0; } }
@@ -148,12 +115,12 @@
             <div class="swipe-hint" id="swipeHint">← свайп →</div>
             <div class="burger-btn" id="burgerBtn" onclick="toggleMenu()"><span></span><span></span><span></span></div>
             <div class="slide-menu" id="slideMenu">
-                <button onclick="openPanel('history')">📜 История</button>
-                <button onclick="openPanel('encyclopedia')">📖 Энциклопедия <span class="badge-dot" id="menuBadge" style="display:none;"></span></button>
-                <button onclick="openPanel('settings')">⚙️ Настройки</button>
-                <button onclick="openPanel('faq')">❓ FAQ</button>
-                <button onclick="openPanel('bug')">🐛 Баг-репорт</button>
-                <button onclick="goToMenu()">🏠 В меню</button>
+                <button ontouchend="openPanel('history')">📜 История</button>
+                <button ontouchend="openPanel('encyclopedia')">📖 Энциклопедия <span class="badge-dot" id="menuBadge" style="display:none;"></span></button>
+                <button ontouchend="openPanel('settings')">⚙️ Настройки</button>
+                <button ontouchend="openPanel('faq')">❓ FAQ</button>
+                <button ontouchend="openPanel('bug')">🐛 Баг-репорт</button>
+                <button ontouchend="goToMenu()">🏠 В меню</button>
             </div>
         </div>
         <div class="text-box" id="textBox">
@@ -165,9 +132,9 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="modalOverlay" onclick="closePanel()">
-        <div class="modal-panel" id="modalPanel" onclick="event.stopPropagation()">
-            <div class="modal-header"><span id="modalTitle"></span><button class="modal-close" onclick="closePanel()">✕</button></div>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-panel" id="modalPanel">
+            <div class="modal-header"><span id="modalTitle"></span><button class="modal-close" ontouchend="closePanel()">✕</button></div>
             <div class="modal-body" id="modalBody"></div>
         </div>
     </div>
@@ -176,8 +143,8 @@
         const sessionId = new URLSearchParams(window.location.search).get('session');
         let gameData=null, currentScene=null, isTyping=false, typingTimer=null, waitingForInput=true;
         let encyclopediaData={}, hasNewDiscovery=false, currentCharDetail=null;
-        let bgOffset = 0, targetBgOffset = 0, isSwiping = false, swipeStartX = 0, swipeStartOffset = 0;
-        let fontSize = 16, typingSpeed = 35;
+        let bgOffset=0, targetBgOffset=0, isSwiping=false, swipeStartX=0, swipeStartOffset=0;
+        let fontSize=16, typingSpeed=35;
 
         const EMOTION_ICONS={'радость':'😊','грусть':'😢','злость':'😠','удивление':'😲','нейтрально':'😐','смущение':'😳','восторг':'🤩','happy':'😊','sad':'😢','angry':'😠','surprised':'😲','normal':'😐','excited':'🤩','serious':'🧐'};
         const CHAR_COLORS={'garfild':'#ff8c42','monika':'#ff69b4','reiko':'#00d4aa','yuki':'#b8a9d4','takeshi':'#ff4444','hana':'#4da6ff','haru':'#ffd700','akira':'#7cfc00','sensei':'#deb887','yumi':'#ff9999','ryuu':'#808080','emi':'#ff1493'};
@@ -185,226 +152,128 @@
         const CHAR_EMOJIS={'garfild':'📋','monika':'📚','reiko':'🏃‍♀️','yuki':'🎨','takeshi':'👊','hana':'👑','haru':'😄','akira':'💻','sensei':'👨‍🏫','yumi':'💉','ryuu':'⚔️','emi':'📰'};
         const SPRITE_FILES={'garfild':'boy_garfild','monika':'girl_monika','reiko':'girl_reiko','yuki':'girl_yuki','takeshi':'boy_takeshi','hana':'girl_hana','haru':'boy_haru','akira':'boy_akira','sensei':'boy_sensei','yumi':'girl_yumi','ryuu':'boy_ryuu','emi':'girl_emi'};
 
-        // Свайп фона
         const vp = document.getElementById('sceneViewport');
-        vp.addEventListener('touchstart', e => {
-            if (e.target.closest('button') || e.target.closest('#playerInput')) return;
-            isSwiping = true; swipeStartX = e.touches[0].clientX; swipeStartOffset = targetBgOffset;
-            document.getElementById('swipeHint').style.display = 'none';
-        }, {passive: true});
-        vp.addEventListener('touchmove', e => {
-            if (!isSwiping) return;
-            const dx = e.touches[0].clientX - swipeStartX;
-            targetBgOffset = Math.max(-30, Math.min(30, swipeStartOffset + dx * 0.15));
-            updateBgPosition();
-        }, {passive: true});
-        vp.addEventListener('touchend', () => { isSwiping = false; });
-        function updateBgPosition() {
-            bgOffset += (targetBgOffset - bgOffset) * 0.1;
-            document.getElementById('sceneBg').style.transform = `translateX(${bgOffset}px)`;
-            if (Math.abs(targetBgOffset - bgOffset) > 0.1) requestAnimationFrame(updateBgPosition);
-        }
+        vp.addEventListener('touchstart', e => { if(e.target.closest('button')||e.target.closest('#playerInput')||e.target.closest('.modal-overlay'))return; isSwiping=true;swipeStartX=e.touches[0].clientX;swipeStartOffset=targetBgOffset;document.getElementById('swipeHint').style.display='none'; },{passive:true});
+        vp.addEventListener('touchmove', e => { if(!isSwiping)return; const dx=e.touches[0].clientX-swipeStartX; targetBgOffset=Math.max(-30,Math.min(30,swipeStartOffset+dx*0.15)); updateBgPosition(); },{passive:true});
+        vp.addEventListener('touchend', () => { isSwiping=false; });
+        function updateBgPosition(){ bgOffset+=(targetBgOffset-bgOffset)*0.1; document.getElementById('sceneBg').style.transform=`translateX(${bgOffset}px)`; if(Math.abs(targetBgOffset-bgOffset)>0.1)requestAnimationFrame(updateBgPosition); }
 
-        // Спрайты
-        function createSprites() {
-            const chars = ['garfild','monika','reiko','yuki','takeshi','hana','haru','akira','sensei','yumi','ryuu','emi'];
-            const layer = document.getElementById('spritesLayer');
-            chars.forEach(id => {
-                const d = document.createElement('div'); d.className = 'sprite-slot'; d.id = 'slot-' + id;
-                d.innerHTML = `<img src="/static/images/sprites/${SPRITE_FILES[id]}.png" alt="${CHAR_NAMES[id]}"><div class="sprite-name-tag">${CHAR_EMOJIS[id]} ${CHAR_NAMES[id]}</div>`;
-                layer.appendChild(d);
-            });
-        }
-        function updateSprites(s) {
-            if (!s) return;
-            Object.keys(s).forEach(id => {
-                const el = document.getElementById('slot-' + id); if (!el) return;
-                if (s[id] && s[id].visible) { el.classList.add('visible'); s[id].highlight ? el.classList.add('highlighted') : el.classList.remove('highlighted'); }
-                else { el.classList.remove('visible', 'highlighted'); }
-            });
-        }
-        function updateBackground(loc) {
-            const bg = document.getElementById('sceneBg'); bg.className = 'scene-background';
-            const map = {'classroom':'bg-classroom','rooftop':'bg-rooftop','library':'bg-library','courtyard':'bg-courtyard','cafeteria':'bg-cafeteria','gym':'bg-gym','clubroom':'bg-clubroom','nursery':'bg-nursery','park':'bg-park','mall':'bg-mall','beach':'bg-beach','shrine':'bg-shrine','hallway':'bg-hallway','gate':'bg-gate','classroom_evening':'bg-classroom-evening'};
-            bg.classList.add(map[loc] || 'bg-classroom');
-            bgOffset = 0; targetBgOffset = 0; bg.style.transform = 'translateX(0)';
-        }
+        function createSprites(){ const chars=['garfild','monika','reiko','yuki','takeshi','hana','haru','akira','sensei','yumi','ryuu','emi']; const layer=document.getElementById('spritesLayer'); chars.forEach(id=>{ const d=document.createElement('div');d.className='sprite-slot';d.id='slot-'+id; d.innerHTML=`<img src="/static/images/sprites/${SPRITE_FILES[id]}.png" alt="${CHAR_NAMES[id]}"><div class="sprite-name-tag">${CHAR_EMOJIS[id]} ${CHAR_NAMES[id]}</div>`; layer.appendChild(d); }); }
+        function updateSprites(s){ if(!s)return; Object.keys(s).forEach(id=>{ const el=document.getElementById('slot-'+id);if(!el)return; if(s[id]&&s[id].visible){el.classList.add('visible');s[id].highlight?el.classList.add('highlighted'):el.classList.remove('highlighted');}else{el.classList.remove('visible','highlighted');} }); }
+        function updateBackground(loc){ const bg=document.getElementById('sceneBg');bg.className='scene-background'; const map={'classroom':'bg-classroom','rooftop':'bg-rooftop','library':'bg-library','courtyard':'bg-courtyard','cafeteria':'bg-cafeteria','gym':'bg-gym','clubroom':'bg-clubroom','nursery':'bg-nursery','park':'bg-park','mall':'bg-mall','beach':'bg-beach','shrine':'bg-shrine','hallway':'bg-hallway','gate':'bg-gate','classroom_evening':'bg-classroom-evening'}; bg.classList.add(map[loc]||'bg-classroom'); bgOffset=0;targetBgOffset=0;bg.style.transform='translateX(0)'; }
 
-        // Меню
-        function toggleMenu() {
-            const m = document.getElementById('slideMenu'), b = document.getElementById('burgerBtn');
-            const open = m.classList.contains('open');
-            m.classList.toggle('open', !open); b.classList.toggle('open', !open);
-        }
-        function closeMenu() { document.getElementById('slideMenu').classList.remove('open'); document.getElementById('burgerBtn').classList.remove('open'); }
+        function toggleMenu(){ const m=document.getElementById('slideMenu'),b=document.getElementById('burgerBtn'); const open=m.classList.contains('open'); m.classList.toggle('open',!open);b.classList.toggle('open',!open); }
+        function closeMenu(){ document.getElementById('slideMenu').classList.remove('open');document.getElementById('burgerBtn').classList.remove('open'); }
 
-        // Панели
-        let currentPanel = null;
-        function openPanel(type) {
-            closeMenu(); currentPanel = type;
+        let currentPanel=null;
+        function openPanel(type){
+            closeMenu();currentPanel=type;
             document.getElementById('modalOverlay').classList.add('open');
-            const title = document.getElementById('modalTitle'), body = document.getElementById('modalBody');
-            if (type === 'history') { title.textContent = '📜 История'; showHistory(); }
-            else if (type === 'encyclopedia') { title.textContent = '📖 Энциклопедия'; loadEncyclopediaPanel(); }
-            else if (type === 'settings') { title.textContent = '⚙️ Настройки'; showSettings(); }
-            else if (type === 'faq') { title.textContent = '❓ FAQ'; showFAQ(); }
-            else if (type === 'bug') { title.textContent = '🐛 Баг-репорт'; body.innerHTML = '<p>Опишите баг:</p><textarea style="width:100%;height:80px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,182,193,0.3);color:#fff;border-radius:8px;padding:8px;" id="bugText"></textarea><button style="margin-top:8px;padding:8px 16px;background:linear-gradient(135deg,#ff69b4,#ff8c42);border:none;color:#fff;border-radius:10px;width:100%;" onclick="alert(\"Спасибо!\");closePanel();">Отправить</button>'; }
+            const title=document.getElementById('modalTitle'),body=document.getElementById('modalBody');
+            if(type==='history'){title.textContent='📜 История';showHistory();}
+            else if(type==='encyclopedia'){title.textContent='📖 Энциклопедия';loadEncyclopediaPanel();}
+            else if(type==='settings'){title.textContent='⚙️ Настройки';showSettings();}
+            else if(type==='faq'){title.textContent='❓ FAQ';showFAQ();}
+            else if(type==='bug'){title.textContent='🐛 Баг-репорт';body.innerHTML='<p>Опишите баг:</p><textarea style="width:100%;height:80px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,182,193,0.3);color:#fff;border-radius:8px;padding:8px;" id="bugText"></textarea><button style="margin-top:8px;padding:8px 16px;background:linear-gradient(135deg,#ff69b4,#ff8c42);border:none;color:#fff;border-radius:10px;width:100%;" onclick="alert(\"Спасибо!\");closePanel();">Отправить</button>';}
         }
-        function closePanel() { document.getElementById('modalOverlay').classList.remove('open'); currentPanel = null; }
+        function closePanel(){ document.getElementById('modalOverlay').classList.remove('open');currentPanel=null; }
 
-        // FAQ
-        function showFAQ() {
-            document.getElementById('modalBody').innerHTML = `
-                <div class="faq-q">❓ Что такое RP Future?</div><div class="faq-a">Генеративная визуальная новелла. ИИ (DeepSeek) создаёт ответы и развивает сюжет в реальном времени.</div>
-                <div class="faq-q">❓ Как играть?</div><div class="faq-a">Пиши действия или реплики в поле ввода и нажимай ▶. Персонажи ответят. Можно: <b>говорить</b> ("Привет!"), <b>действовать</b> ("Я иду к доске"), <b>наблюдать</b> (напиши "...").</div>
-                <div class="faq-q">❓ Примеры действий</div><div class="faq-a"><div class="faq-example">👤 Привет, Рейко! Как тренировка?</div><div class="faq-example">👤 Я сажусь за последнюю парту.</div><div class="faq-example">👤 ...</div></div>
-                <div class="faq-q">❓ Что такое энциклопедия?</div><div class="faq-a">В энциклопедии отображаются все персонажи мира. Когда ты встречаешь нового персонажа — его карточка открывается. Там видно имя, роль, характер и шкалу отношений.</div>
-                <div class="faq-q">❓ Как работают отношения?</div><div class="faq-a">У каждого персонажа шкала от -100 до +100. Она меняется от твоих поступков. Дружелюбие повышает, грубость понижает. От значения зависит как персонаж с тобой общается.</div>
-                <div class="faq-q">❓ Как пропустить печать?</div><div class="faq-a">Тапни по текстовому полю — весь текст появится сразу.</div>
-                <div class="faq-q">❓ Как осмотреть локацию?</div><div class="faq-a">Свайпни влево или вправо по сцене — фон сдвинется.</div>
-            `;
-        }
+        function showFAQ(){ document.getElementById('modalBody').innerHTML=`<div class="faq-q">❓ Что такое RP Future?</div><div class="faq-a">Генеративная визуальная новелла. ИИ создаёт ответы и развивает сюжет.</div><div class="faq-q">❓ Как играть?</div><div class="faq-a">Пиши действия или реплики в поле ввода. Можно: <b>говорить</b>, <b>действовать</b>, <b>наблюдать</b> (напиши "...").</div><div class="faq-q">❓ Примеры</div><div class="faq-a"><div class="faq-example">👤 Привет, Рейко!</div><div class="faq-example">👤 Я сажусь за парту.</div><div class="faq-example">👤 ...</div></div><div class="faq-q">❓ Энциклопедия</div><div class="faq-a">Все персонажи мира. При встрече карточка открывается. Видно имя, роль и шкалу отношений.</div><div class="faq-q">❓ Отношения</div><div class="faq-a">Шкала от -100 до +100. Меняется от поступков. Влияет на тон речи NPC.</div><div class="faq-q">❓ Скип текста</div><div class="faq-a">Тап по текстовому полю — текст сразу весь.</div><div class="faq-q">❓ Осмотр локации</div><div class="faq-a">Свайп влево-вправо по сцене.</div>`; }
 
-        // Настройки
-        function showSettings() {
-            const body = document.getElementById('modalBody');
-            body.innerHTML = `
-                <div class="setting-row"><label>Размер текста: <span class="value-tag" id="fsLabel">${fontSize}px</span></label><input type="range" min="12" max="24" value="${fontSize}" oninput="updateFontPreview(this.value)"></div>
-                <div class="preview-box" id="fontPreview" style="font-size:${fontSize}px;"><span style="color:#FFB6C1;">🗣️ Ты:</span> Привет!<br><span style="color:#ff69b4;">📚 Моника:</span> Добро пожаловать!</div>
-                <div class="setting-row"><label>Скорость печати: <span class="value-tag" id="spLabel">${typingSpeed}мс</span></label><input type="range" min="10" max="80" value="${typingSpeed}" oninput="updateSpeedPreview(this.value)"></div>
-                <div class="preview-box"><span id="speedDemo"></span><span class="typing-cursor" id="speedCursor"></span></div>
-                <button style="margin-top:10px;padding:8px 16px;background:linear-gradient(135deg,#ff69b4,#ff8c42);border:none;color:#fff;border-radius:10px;width:100%;" onclick="saveSettings()">💾 Сохранить</button>`;
-        }
-        function updateFontPreview(v) { document.getElementById('fsLabel').textContent = v + 'px'; document.getElementById('fontPreview').style.fontSize = v + 'px'; }
-        function updateSpeedPreview(v) {
-            document.getElementById('spLabel').textContent = v + 'мс';
-            const el = document.getElementById('speedDemo'); el.textContent = '';
-            document.getElementById('speedCursor').style.display = 'inline-block';
-            const t = 'Пример...'; let i = 0;
-            function type() { if (i < t.length) { el.textContent += t[i++]; setTimeout(type, parseInt(v)); } else document.getElementById('speedCursor').style.display = 'none'; }
-            type();
-        }
-        function saveSettings() {
-            fontSize = parseInt(document.getElementById('fsLabel').textContent);
-            typingSpeed = parseInt(document.getElementById('spLabel').textContent);
-            document.getElementById('dialogueLine').style.fontSize = fontSize + 'px';
-            document.getElementById('narratorLine').style.fontSize = (fontSize * 0.8) + 'px';
-            localStorage.setItem('mobFontSize', fontSize);
-            localStorage.setItem('mobTypingSpeed', typingSpeed);
-            closePanel();
-        }
+        function showSettings(){ const body=document.getElementById('modalBody'); body.innerHTML=`<div class="setting-row"><label>Размер текста: <span class="value-tag" id="fsLabel">${fontSize}px</span></label><input type="range" min="12" max="24" value="${fontSize}" oninput="updateFontPreview(this.value)"></div><div class="preview-box" id="fontPreview" style="font-size:${fontSize}px;"><span style="color:#FFB6C1;">🗣️ Ты:</span> Привет!<br><span style="color:#ff69b4;">📚 Моника:</span> Добро пожаловать!</div><div class="setting-row"><label>Скорость печати: <span class="value-tag" id="spLabel">${typingSpeed}мс</span></label><input type="range" min="10" max="80" value="${typingSpeed}" oninput="updateSpeedPreview(this.value)"></div><div class="preview-box"><span id="speedDemo"></span><span class="typing-cursor" id="speedCursor"></span></div><button style="margin-top:10px;padding:8px 16px;background:linear-gradient(135deg,#ff69b4,#ff8c42);border:none;color:#fff;border-radius:10px;width:100%;" onclick="saveSettings()">💾 Сохранить</button>`; }
+        function updateFontPreview(v){ document.getElementById('fsLabel').textContent=v+'px';document.getElementById('fontPreview').style.fontSize=v+'px'; }
+        function updateSpeedPreview(v){ document.getElementById('spLabel').textContent=v+'мс'; const el=document.getElementById('speedDemo');el.textContent='';document.getElementById('speedCursor').style.display='inline-block'; const t='Пример...';let i=0;function type(){if(i<t.length){el.textContent+=t[i++];setTimeout(type,parseInt(v));}else document.getElementById('speedCursor').style.display='none';} type(); }
+        function saveSettings(){ fontSize=parseInt(document.getElementById('fsLabel').textContent); typingSpeed=parseInt(document.getElementById('spLabel').textContent); document.getElementById('dialogueLine').style.fontSize=fontSize+'px'; document.getElementById('narratorLine').style.fontSize=(fontSize*0.8)+'px'; localStorage.setItem('mobFontSize',fontSize);localStorage.setItem('mobTypingSpeed',typingSpeed); closePanel(); }
 
-        // История
-        function showHistory() {
-            if (!gameData || !gameData.game_history) return;
-            document.getElementById('modalBody').innerHTML = gameData.game_history.map(s => {
-                if (s.type === 'player_action') return `<div class="history-entry player"><b>🗣️ Ты:</b> ${s.player_text}</div>`;
-                else if (s.speaker_id === 'narrator') return `<div class="history-entry narrator">📖 ${s.speaker_text||''}</div>`;
-                else return `<div class="history-entry" style="border-left-color:${CHAR_COLORS[s.speaker_id]||'#fff'}"><b>${CHAR_EMOJIS[s.speaker_id]||''} ${s.speaker_name||s.speaker_id}:</b> ${s.speaker_text||''}</div>`;
+        function showHistory(){ if(!gameData||!gameData.game_history)return; document.getElementById('modalBody').innerHTML=gameData.game_history.map(s=>{ if(s.type==='player_action')return`<div class="history-entry player"><b>🗣️ Ты:</b> ${s.player_text}</div>`; else if(s.speaker_id==='narrator')return`<div class="history-entry narrator">📖 ${s.speaker_text||''}</div>`; else return`<div class="history-entry" style="border-left-color:${CHAR_COLORS[s.speaker_id]||'#fff'}"><b>${CHAR_EMOJIS[s.speaker_id]||''} ${s.speaker_name||s.speaker_id}:</b> ${s.speaker_text||''}</div>`; }).join(''); }
+
+        async function loadEncyclopediaPanel(){ try{ const r=await fetch('/api/encyclopedia?session='+sessionId); const d=await r.json(); if(d.success){encyclopediaData=d.characters;hasNewDiscovery=d.has_new;document.getElementById('menuBadge').style.display=d.has_new?'inline-block':'none';renderEncyclopediaGrid();} }catch(e){} }
+
+        function renderEncyclopediaGrid(){
+            const body=document.getElementById('modalBody');
+            body.innerHTML='<div class="encyclopedia-grid" id="encyclopediaGrid"></div>';
+            const g=document.getElementById('encyclopediaGrid');
+            const chars=Object.values(encyclopediaData);
+
+            g.innerHTML = chars.map(c => {
+                const unlockedClass = c.unlocked ? '' : 'locked';
+                const newDot = (c.unlocked && !c.viewed) ? '<div class="card-new-dot"></div>' : '';
+                const imgContent = c.unlocked
+                    ? `<img src="/static/images/sprites/${c.sprite}.png" class="card-img">`
+                    : '<div class="card-emoji">❓</div>';
+                const nameContent = c.unlocked ? `${c.emoji} ${c.name}` : '???';
+
+                return `<div class="char-card ${unlockedClass}" data-char-id="${c.id}" data-unlocked="${c.unlocked}">
+                    ${newDot}
+                    ${imgContent}
+                    <div class="card-name">${nameContent}</div>
+                </div>`;
             }).join('');
-        }
 
-        // Энциклопедия
-        async function loadEncyclopediaPanel() {
-            try {
-                const r = await fetch('/api/encyclopedia?session=' + sessionId);
-                const d = await r.json();
-                if (d.success) { encyclopediaData = d.characters; hasNewDiscovery = d.has_new; document.getElementById('menuBadge').style.display = d.has_new ? 'inline-block' : 'none'; renderEncyclopediaGrid(); }
-            } catch (e) {}
-        }
-        function renderEncyclopediaGrid() {
-            const grid = document.getElementById('modalBody');
-            grid.innerHTML = '<div class="encyclopedia-grid" id="encyclopediaGrid"></div>';
-            const g = document.getElementById('encyclopediaGrid');
-
-            g.innerHTML = Object.values(encyclopediaData).map(c => `
-                <div class="char-card ${c.unlocked?'':'locked'}"
-                     data-char-id="${c.id}"
-                     data-unlocked="${c.unlocked}">
-                    ${c.unlocked && !c.viewed ? '<div class="card-new-dot"></div>' : ''}
-                    ${c.unlocked ?
-                        `<img src="/static/images/sprites/${c.sprite}.png" class="card-img">` :
-                        `<div class="card-emoji">❓</div>`
-                    }
-                    <div class="card-name">${c.unlocked ? c.emoji+' '+c.name : '???'}</div>
-                </div>
-            `).join('');
-
-            // Добавляем обработчики кликов через addEventListener
-            g.querySelectorAll('.char-card').forEach(card => {
-                card.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const charId = this.dataset.charId;
-                    const unlocked = this.dataset.unlocked === 'true';
-                    if (unlocked && charId) {
-                        viewCharacter(charId);
-                    }
-                });
-                card.addEventListener('touchend', function(e) {
-                    e.stopPropagation();
+            // Вешаем обработчики
+            const cards = g.querySelectorAll('.char-card');
+            cards.forEach(card => {
+                const handleClick = function(e) {
                     e.preventDefault();
-                    const charId = this.dataset.charId;
-                    const unlocked = this.dataset.unlocked === 'true';
+                    e.stopPropagation();
+                    const charId = card.getAttribute('data-char-id');
+                    const unlocked = card.getAttribute('data-unlocked') === 'true';
+                    console.log('Card clicked:', charId, 'unlocked:', unlocked);
                     if (unlocked && charId) {
                         viewCharacter(charId);
                     }
-                });
+                };
+                card.addEventListener('click', handleClick);
+                card.addEventListener('touchend', handleClick);
             });
         }
-        function viewCharacter(charId) {
+
+        function viewCharacter(charId){
             fetch('/api/encyclopedia/view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,char_id:charId})});
             if(encyclopediaData[charId]){encyclopediaData[charId].viewed=true;currentCharDetail=encyclopediaData[charId];showCharDetail();}
             hasNewDiscovery=Object.values(encyclopediaData).some(c=>c.unlocked&&!c.viewed);
             document.getElementById('menuBadge').style.display=hasNewDiscovery?'inline-block':'none';
             renderEncyclopediaGrid();
         }
-        function showCharDetail() {
-            const c=currentCharDetail; if(!c)return;
+
+        function showCharDetail(){
+            const c=currentCharDetail;if(!c)return;
             const val=c.relationship||0, pct=((val+100)/200)*100;
             let emoji='😐';
             if(val<=-75)emoji='😡';else if(val<=-50)emoji='😠';else if(val<=-25)emoji='😒';else if(val<=-5)emoji='😕';else if(val<=5)emoji='😐';else if(val<=25)emoji='🙂';else if(val<=50)emoji='😊';else if(val<=75)emoji='😍';else emoji='🥰';
             document.getElementById('modalBody').innerHTML=`<div class="char-detail-body"><div class="char-detail-sprite"><img src="/static/images/sprites/${c.sprite}.png"></div><div class="char-detail-info"><div class="char-detail-role">${c.emoji} ${c.name}</div><div>${c.role||''}</div><div class="char-detail-desc">${c.personality||''}</div><div class="rel-bar-c"><div class="rel-label">Отношение:</div><div class="rel-bar"><div class="rel-fill" style="width:${100-pct}%;left:${pct}%;"></div><div class="rel-emoji">${emoji}</div></div><div class="rel-val" style="color:${val<-10?'#ff4444':val>10?'#4caf50':'#aaa'}">${val>0?'+':''}${val}</div></div></div></div>`;
         }
 
-        // Игра
-        async function loadGame() {
-            if(!sessionId)return;
-            try{const r=await fetch('/api/load_game_data?session='+sessionId);const d=await r.json();if(d.success){gameData=d.game;document.getElementById('locationTag').textContent='📍 '+d.game.location_name;updateBackground(d.game.current_location);if(gameData.game_history.length)await displayScene(gameData.game_history[gameData.game_history.length-1]);enableInput();}}catch(e){console.error(e);}
-        }
-        async function typeText(el,text,speed=typingSpeed){isTyping=true;el.textContent='';document.getElementById('typingCursor').style.display='inline-block';disableInput();return new Promise(resolve=>{let i=0;function type(){if(i<text.length){el.textContent+=text[i++];const delay=(text[i-1]==='.'||text[i-1]==='!')?speed*4:speed+Math.random()*10;typingTimer=setTimeout(type,delay);}else{document.getElementById('typingCursor').style.display='none';isTyping=false;resolve();}}type();});}
-        function skipTyping(){if(isTyping&&typingTimer){clearTimeout(typingTimer);isTyping=false;const el=document.getElementById('typingText');if(currentScene)el.textContent=currentScene.type==='player_action'?'🗣️ '+currentScene.player_text:(currentScene.speaker_text||'');document.getElementById('typingCursor').style.display='none';enableInput();}}
-        async function displayScene(scene){
-            currentScene=scene;document.getElementById('speakerTag').style.display='none';document.getElementById('narratorLine').textContent='';document.getElementById('typingText').textContent='';disableInput();
-            if(scene.type==='player_action'){document.getElementById('typingText').style.color='#FFB6C1';document.getElementById('typingCursor').style.display='inline-block';await typeText(document.getElementById('typingText'),'🗣️ '+scene.player_text,12);enableInput();return;}
-            if(scene.sprites)updateSprites(scene.sprites);
-            if(scene.location){updateBackground(scene.location);document.getElementById('locationTag').textContent='📍 '+(scene.location||'');}
-            if(scene.narrator_text)document.getElementById('narratorLine').textContent=scene.narrator_text;
-            const sid=scene.speaker_id||'narrator';
-            if(sid!=='narrator'){document.getElementById('speakerTag').style.display='block';const tag=document.getElementById('speakerTagName');tag.textContent=scene.speaker_name||CHAR_NAMES[sid]||sid;tag.style.background=CHAR_COLORS[sid]||'#fff';tag.style.color='#000';}
-            document.getElementById('typingText').style.color=sid==='narrator'?'#c0c0c0':'#fff';document.getElementById('typingCursor').style.display='inline-block';await typeText(document.getElementById('typingText'),scene.speaker_text||'...');
-            if(scene._new_discovery&&scene._new_discovery.length){scene._new_discovery.forEach(cid=>showDiscoveryNotification(cid));}
-            waitingForInput=true;enableInput();
-        }
-        function enableInput(){document.getElementById('playerInput').disabled=false;document.getElementById('sendBtn').disabled=false;waitingForInput=true;setTimeout(()=>{if(!isTyping)document.getElementById('playerInput').focus();},100);}
-        function disableInput(){document.getElementById('playerInput').disabled=true;document.getElementById('sendBtn').disabled=true;waitingForInput=false;}
-        async function sendAction(){
-            if(isTyping){skipTyping();return;}if(!waitingForInput)return;
-            const inp=document.getElementById('playerInput'),action=inp.value.trim();if(!action)return;
-            inp.value='';disableInput();const ps={type:'player_action',player_text:action};if(gameData)gameData.game_history.push(ps);await displayScene(ps);
-            try{const r=await fetch('/api/game_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,action})});const d=await r.json();if(d.success&&d.scene){if(gameData)gameData.game_history.push(d.scene);await new Promise(rs=>setTimeout(rs,500));await displayScene(d.scene);await loadEncyclopediaPanel();}}catch(e){console.error(e);enableInput();}
-        }
-        function goToMenu(){if(confirm('Вернуться в меню?')){fetch('/api/saves/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId})});window.location.href='/';}}
-        function showDiscoveryNotification(charId){const d=encyclopediaData[charId];if(!d)return;const n=document.createElement('div');n.className='unlock-notification';n.innerHTML=`✨ Вы встретили <b>${d.name}</b>!`;document.body.appendChild(n);setTimeout(()=>n.remove(),4000);}
+        async function loadGame(){ if(!sessionId)return; try{const r=await fetch('/api/load_game_data?session='+sessionId);const d=await r.json();if(d.success){gameData=d.game;document.getElementById('locationTag').textContent='📍 '+d.game.location_name;updateBackground(d.game.current_location);if(gameData.game_history.length)await displayScene(gameData.game_history[gameData.game_history.length-1]);enableInput();}}catch(e){console.error(e);} }
+        async function typeText(el,text,speed=typingSpeed){ isTyping=true;el.textContent='';document.getElementById('typingCursor').style.display='inline-block';disableInput(); return new Promise(resolve=>{ let i=0;function type(){ if(i<text.length){ el.textContent+=text[i++]; const delay=(text[i-1]==='.'||text[i-1]==='!')?speed*4:speed+Math.random()*10; typingTimer=setTimeout(type,delay); } else { document.getElementById('typingCursor').style.display='none';isTyping=false;resolve(); } } type(); }); }
+        function skipTyping(){ if(isTyping&&typingTimer){ clearTimeout(typingTimer);isTyping=false; const el=document.getElementById('typingText'); if(currentScene)el.textContent=currentScene.type==='player_action'?'🗣️ '+currentScene.player_text:(currentScene.speaker_text||''); document.getElementById('typingCursor').style.display='none';enableInput(); } }
+        async function displayScene(scene){ currentScene=scene;document.getElementById('speakerTag').style.display='none';document.getElementById('narratorLine').textContent='';document.getElementById('typingText').textContent='';disableInput(); if(scene.type==='player_action'){ document.getElementById('typingText').style.color='#FFB6C1';document.getElementById('typingCursor').style.display='inline-block';await typeText(document.getElementById('typingText'),'🗣️ '+scene.player_text,12);enableInput();return; } if(scene.sprites)updateSprites(scene.sprites); if(scene.location){ updateBackground(scene.location);document.getElementById('locationTag').textContent='📍 '+(scene.location||''); } if(scene.narrator_text)document.getElementById('narratorLine').textContent=scene.narrator_text; const sid=scene.speaker_id||'narrator'; if(sid!=='narrator'){ document.getElementById('speakerTag').style.display='block'; const tag=document.getElementById('speakerTagName');tag.textContent=scene.speaker_name||CHAR_NAMES[sid]||sid;tag.style.background=CHAR_COLORS[sid]||'#fff';tag.style.color='#000'; } document.getElementById('typingText').style.color=sid==='narrator'?'#c0c0c0':'#fff';document.getElementById('typingCursor').style.display='inline-block';await typeText(document.getElementById('typingText'),scene.speaker_text||'...'); if(scene._new_discovery&&scene._new_discovery.length){ scene._new_discovery.forEach(cid=>showDiscoveryNotification(cid)); } waitingForInput=true;enableInput(); }
+        function enableInput(){ document.getElementById('playerInput').disabled=false;document.getElementById('sendBtn').disabled=false;waitingForInput=true;setTimeout(()=>{if(!isTyping)document.getElementById('playerInput').focus();},100); }
+        function disableInput(){ document.getElementById('playerInput').disabled=true;document.getElementById('sendBtn').disabled=true;waitingForInput=false; }
+        async function sendAction(){ if(isTyping){skipTyping();return;}if(!waitingForInput)return; const inp=document.getElementById('playerInput'),action=inp.value.trim();if(!action)return; inp.value='';disableInput(); const ps={type:'player_action',player_text:action};if(gameData)gameData.game_history.push(ps);await displayScene(ps); try{const r=await fetch('/api/game_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,action})});const d=await r.json();if(d.success&&d.scene){if(gameData)gameData.game_history.push(d.scene);await new Promise(rs=>setTimeout(rs,500));await displayScene(d.scene);await loadEncyclopediaPanel();}}catch(e){console.error(e);enableInput();} }
+        function goToMenu(){ if(confirm('Вернуться в меню?')){ fetch('/api/saves/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId})});window.location.href='/'; } }
+        function showDiscoveryNotification(charId){ const d=encyclopediaData[charId];if(!d)return; const n=document.createElement('div');n.className='unlock-notification';n.innerHTML=`✨ Вы встретили <b>${d.name}</b>!`;document.body.appendChild(n);setTimeout(()=>n.remove(),4000); }
 
-        // Загрузка настроек
         const savedFont=localStorage.getItem('mobFontSize'), savedSpeed=localStorage.getItem('mobTypingSpeed');
         if(savedFont){fontSize=parseInt(savedFont);document.getElementById('dialogueLine').style.fontSize=fontSize+'px';document.getElementById('narratorLine').style.fontSize=(fontSize*0.8)+'px';}
         if(savedSpeed)typingSpeed=parseInt(savedSpeed);
 
         document.getElementById('playerInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendAction();}});
         document.getElementById('sendBtn').addEventListener('click',e=>{e.preventDefault();sendAction();});
+        document.getElementById('sendBtn').addEventListener('touchend',e=>{e.preventDefault();sendAction();});
         document.getElementById('textBox').addEventListener('click',e=>{if(isTyping&&e.target.id!=='playerInput'&&e.target.id!=='sendBtn')skipTyping();});
-        document.addEventListener('DOMContentLoaded',()=>{createSprites();loadGame();fetch('/api/encyclopedia?session='+sessionId).then(r=>r.json()).then(d=>{if(d.success){encyclopediaData=d.characters;hasNewDiscovery=d.has_new;document.getElementById('menuBadge').style.display=d.has_new?'inline-block':'none';}});});
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closePanel();
+        });
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            createSprites();
+            loadGame();
+            fetch('/api/encyclopedia?session='+sessionId).then(r=>r.json()).then(d=>{
+                if(d.success){encyclopediaData=d.characters;hasNewDiscovery=d.has_new;document.getElementById('menuBadge').style.display=d.has_new?'inline-block':'none';}
+            });
+        });
     </script>
 </body>
 </html>
