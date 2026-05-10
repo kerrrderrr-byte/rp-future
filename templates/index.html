@@ -222,37 +222,96 @@
         }
 
         // Новая игра
-        async function startNewGame(){
+        async function startNewGame() {
             const name = document.getElementById('characterName').value.trim();
             const worldId = document.getElementById('worldSelect').value || 'academy_sakura';
-            if(!name){ showNotification('Введи имя!','error'); return; }
-            try{
-                const r = await fetch(API+'/api/create_game',{
-                    method:'POST',
-                    headers:{'Content-Type':'application/json'},
-                    body:JSON.stringify({character_name:name,world_id:worldId})
+
+            if (!name) {
+                showNotification('Пожалуйста, введи имя персонажа!', 'error');
+                document.getElementById('characterName').focus();
+                return;
+            }
+
+            const button = document.querySelector('#newGameModal .anime-button.primary');
+            button.disabled = true;
+            button.textContent = '⏳ Создаём мир...';
+
+            try {
+                const response = await fetch('/api/create_game', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        character_name: name,
+                        world_id: worldId
+                    })
                 });
-                const d = await r.json();
-                if(d.success){
-                    localStorage.setItem('currentSessionId', d.session_id);
-                    window.location.href = d.redirect;
-                } else showNotification(d.error,'error');
-            }catch(e){ showNotification('Ошибка соединения','error'); }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Сохраняем ID сессии локально
+                    localStorage.setItem('currentSessionId', data.session_id);
+                    localStorage.setItem('currentCharacterName', name);
+                    localStorage.setItem('currentWorldId', worldId);
+
+                    // Синхронизируем с профилем
+                    await syncSave(data.session_id);
+
+                    closeNewGameModal();
+                    showNotification('✨ Мир создан! Приключение начинается...', 'success');
+
+                    // Редирект на игру
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000);
+                } else {
+                    showNotification(data.error || 'Ошибка при создании мира', 'error');
+                    button.disabled = false;
+                    button.textContent = '✦ Начать приключение ✦';
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка соединения с сервером', 'error');
+                button.disabled = false;
+                button.textContent = '✦ Начать приключение ✦';
+            }
+        }
+
+        // Функция синхронизации сохранения с профилем
+        async function syncSave(sessionId) {
+            try {
+                await fetch('/api/saves/sync', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId })
+                });
+            } catch (e) {
+                console.error('Ошибка синхронизации:', e);
+            }
         }
 
         // Продолжить
-        async function continueGame(){
-            const sid = localStorage.getItem('currentSessionId');
-            if(sid){
-                try{
-                    const r = await fetch(API+'/api/load_game_data?session='+sid);
-                    const d = await r.json();
-                    if(d.success){ window.location.href='/game?session='+sid; return; }
-                }catch(e){}
-            }
-            document.getElementById('loadGameModal').style.display='flex';
-            loadSaves();
+        async function continueGame() {
+        const sessionId = localStorage.getItem('currentSessionId');
+
+        if (sessionId) {
+            try {
+                const response = await fetch('/api/load_game_data?session=' + sessionId);
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('👋 С возвращением!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/game?session=' + sessionId;
+                    }, 800);
+                    return;
+                }
+            } catch (e) {}
         }
+
+    // Если нет активной сессии — переходим на страницу всех сохранений
+    window.location.href = '/saves';
+}
 
         async function loadSaves(){
             const list = document.getElementById('sessionsList');

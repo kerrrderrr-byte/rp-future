@@ -423,6 +423,133 @@ def api_saves_delete():
 def health():
     return jsonify({'status': 'ok', 'mode': 'production' if IS_PRODUCTION else 'local', 'api': bool(DEEPSEEK_API_KEY), 'timestamp': datetime.now().isoformat()})
 
+
+@app.route('/saves')
+def saves_page():
+    """Страница всех сохранений игрока"""
+    token = request.cookies.get('auth_token', '')
+    if not token:
+        return render_template('login.html')
+
+    user_login = token.split(':')[0]
+    user = get_user(user_login)
+    if not user:
+        return render_template('login.html')
+
+    return render_template('saves.html', user=user)
+
+
+@app.route('/api/saves/list')
+def api_saves_list():
+    """Получить все сохранения с деталями"""
+    token = request.cookies.get('auth_token', '')
+    if not token:
+        return jsonify({'success': False, 'saves': []})
+
+    user_login = token.split(':')[0]
+    saves = []
+
+    if IS_PRODUCTION and supabase:
+        try:
+            result = supabase.table('player_saves') \
+                .select('*') \
+                .eq('user_login', user_login) \
+                .order('last_updated', desc=True) \
+                .execute()
+
+            if result.data:
+                for s in result.data:
+                    saves.append({
+                        'session_id': s['session_id'],
+                        'player_name': s.get('player_name', ''),
+                        'world_id': s.get('world_id', 'academy_sakura'),
+                        'world_name': s.get('world_name', 'Академия Сакура'),
+                        'created_at': s.get('created_at', ''),
+                        'last_updated': s.get('last_updated', ''),
+                        'current_location': s.get('current_location', ''),
+                        'last_scene_preview': s.get('last_scene_preview', ''),
+                        'status': s.get('status', 'active')
+                    })
+        except Exception as e:
+            print(f"❌ Error loading saves: {e}")
+    else:
+        games = load_games_local()
+        for sid, g in games.items():
+            saves.append({
+                'session_id': sid,
+                'player_name': g.get('player_name', ''),
+                'world_id': g.get('world_id', 'academy_sakura'),
+                'world_name': g.get('world_name', 'Академия Сакура'),
+                'created_at': g.get('created_at', ''),
+                'last_updated': g.get('created_at', ''),
+                'current_location': g.get('current_location', ''),
+                'last_scene_preview': g.get('last_scene_preview', ''),
+                'status': g.get('status', 'active')
+            })
+        saves.sort(key=lambda x: x.get('last_updated', ''), reverse=True)
+
+    return jsonify({'success': True, 'saves': saves})
+
+
+@app.route('/api/saves/sync', methods=['POST'])
+def api_sync_save():
+    """Синхронизировать текущую игру в player_saves"""
+    token = request.cookies.get('auth_token', '')
+    data = request.get_json(force=True)
+    session_id = data.get('session_id', '')
+
+    if not token or not session_id:
+        return jsonify({'success': False, 'error': 'Нет данных'}), 400
+
+    user_login = token.split(':')[0]
+    game = get_game(session_id)
+
+    if not game:
+        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+
+    # Получаем последнюю сцену для превью
+    last_scene = ''
+    history = game.get('game_history', [])
+    if history:
+        last = history[-1]
+        if last.get('type') == 'player_action':
+            last_scene = '🗣️ ' + last.get('player_text', '')[:100]
+        else:
+            last_scene = (last.get('speaker_text', '') or last.get('narrator_text', ''))[:100]
+
+    if IS_PRODUCTION and supabase:
+        try:
+            save_data = {
+                'user_login': user_login,
+                'session_id': session_id,
+                'player_name': game['player_name'],
+                'world_id': game.get('world_id', 'academy_sakura'),
+                'world_name': game.get('world_name', 'Академия Сакура'),
+                'current_location': game.get('current_location', 'classroom'),
+                'last_scene_preview': last_scene,
+                'game_history': json.dumps(game.get('game_history', [])),
+                'ai_context': json.dumps(game.get('ai_context', {})),
+                'status': game.get('status', 'active'),
+                'last_updated': datetime.now().isoformat()
+            }
+
+            existing = supabase.table('player_saves').select('id').eq('session_id', session_id).execute()
+            if existing.data:
+                supabase.table('player_saves').update(save_data).eq('session_id', session_id).execute()
+            else:
+                supabase.table('player_saves').insert(save_data).execute()
+        except Exception as e:
+            print(f"❌ Sync error: {e}")
+    else:
+        # Локально обновляем
+        games = load_games_local()
+        if session_id in games:
+            games[session_id]['last_scene_preview'] = last_scene
+            games[session_id]['last_updated'] = datetime.now().isoformat()
+            save_games_local(games)
+
+    return jsonify({'success': True, 'message': 'Синхронизировано'})
+
 if __name__ == '__main__':
     print(f"🎮 RP Future | {'PRODUCTION' if IS_PRODUCTION else 'LOCAL'} | API: {'✅' if DEEPSEEK_API_KEY else '⚠️'}")
     app.run(debug=not IS_PRODUCTION, host='0.0.0.0', port=int(os.getenv('PORT', 5000)), threaded=True)
