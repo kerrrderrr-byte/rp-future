@@ -313,9 +313,43 @@
             } catch (e) {}
         }
         function renderEncyclopediaGrid() {
-            const grid = document.getElementById('modalBody'); grid.innerHTML = '<div class="encyclopedia-grid" id="encyclopediaGrid"></div>';
+            const grid = document.getElementById('modalBody');
+            grid.innerHTML = '<div class="encyclopedia-grid" id="encyclopediaGrid"></div>';
             const g = document.getElementById('encyclopediaGrid');
-            g.innerHTML = Object.values(encyclopediaData).map(c => `<div class="char-card ${c.unlocked?'':'locked'}" onclick="${c.unlocked?`viewCharacter('${c.id}')`:''}">${c.unlocked&&!c.viewed?'<div class="card-new-dot"></div>':''}${c.unlocked?`<img src="/static/images/sprites/${c.sprite}.png" class="card-img">`:`<div class="card-emoji">❓</div>`}<div class="card-name">${c.unlocked?c.emoji+' '+c.name:'???'}</div></div>`).join('');
+
+            g.innerHTML = Object.values(encyclopediaData).map(c => `
+                <div class="char-card ${c.unlocked?'':'locked'}"
+                     data-char-id="${c.id}"
+                     data-unlocked="${c.unlocked}">
+                    ${c.unlocked && !c.viewed ? '<div class="card-new-dot"></div>' : ''}
+                    ${c.unlocked ?
+                        `<img src="/static/images/sprites/${c.sprite}.png" class="card-img">` :
+                        `<div class="card-emoji">❓</div>`
+                    }
+                    <div class="card-name">${c.unlocked ? c.emoji+' '+c.name : '???'}</div>
+                </div>
+            `).join('');
+
+            // Добавляем обработчики кликов через addEventListener
+            g.querySelectorAll('.char-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const charId = this.dataset.charId;
+                    const unlocked = this.dataset.unlocked === 'true';
+                    if (unlocked && charId) {
+                        viewCharacter(charId);
+                    }
+                });
+                card.addEventListener('touchend', function(e) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const charId = this.dataset.charId;
+                    const unlocked = this.dataset.unlocked === 'true';
+                    if (unlocked && charId) {
+                        viewCharacter(charId);
+                    }
+                });
+            });
         }
         function viewCharacter(charId) {
             fetch('/api/encyclopedia/view',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,char_id:charId})});
