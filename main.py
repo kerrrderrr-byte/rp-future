@@ -7,7 +7,6 @@ import os
 import requests
 import hashlib
 import socket
-from functools import wraps
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,9 +16,6 @@ CORS(app)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
 socket.setdefaulttimeout(60)
 
-# ============================================
-# КОНФИГУРАЦИЯ
-# ============================================
 IS_PRODUCTION = os.getenv('RENDER', False) or os.getenv('PRODUCTION', False)
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
@@ -38,9 +34,6 @@ if SUPABASE_URL and SUPABASE_KEY:
     except Exception as e:
         print(f"⚠️ Supabase error: {e}")
 
-# ============================================
-# ХЕШИ
-# ============================================
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -55,15 +48,7 @@ def load_users_local():
                 return json.loads(content) if content else {}
         except:
             pass
-    default = {
-        'ADMIN': {
-            'username': 'ADMIN',
-            'login': 'ADMIN',
-            'password_hash': hash_password('qwerty123'),
-            'display_name': 'Администратор',
-            'is_admin': True
-        }
-    }
+    default = {'ADMIN': {'username': 'ADMIN', 'login': 'ADMIN', 'password_hash': hash_password('qwerty123'), 'display_name': 'Администратор', 'is_admin': True}}
     save_users_local(default)
     return default
 
@@ -83,30 +68,20 @@ def get_user(login):
 def create_user(username, login, password, display_name):
     if IS_PRODUCTION and supabase:
         try:
-            supabase.table('users').insert({
-                'username': username, 'login': login,
-                'password_hash': hash_password(password),
-                'display_name': display_name, 'is_admin': False
-            }).execute()
+            supabase.table('users').insert({'username': username, 'login': login, 'password_hash': hash_password(password), 'display_name': display_name, 'is_admin': False}).execute()
             return True, 'Пользователь создан'
         except Exception as e:
             return False, str(e)
     else:
         users = load_users_local()
-        if login in users:
-            return False, 'Логин занят'
-        if any(u['username'] == username for u in users.values()):
-            return False, 'Имя занято'
-        users[login] = {
-            'username': username, 'login': login,
-            'password_hash': hash_password(password),
-            'display_name': display_name, 'is_admin': False
-        }
+        if login in users: return False, 'Логин занят'
+        if any(u['username'] == username for u in users.values()): return False, 'Имя занято'
+        users[login] = {'username': username, 'login': login, 'password_hash': hash_password(password), 'display_name': display_name, 'is_admin': False}
         save_users_local(users)
         return True, 'Пользователь создан'
 
 # ============================================
-# МИРЫ (локальные)
+# МИРЫ
 # ============================================
 LOCAL_WORLDS = {
     "academy_sakura": {
@@ -133,20 +108,13 @@ LOCAL_WORLDS = {
             "emi": {"id":"emi","name":"Эми","role":"журналистка","personality":"Любопытная","speaking_style":"Быстрый","text_color":"#ff1493","emoji":"📰","sprite":"girl_emi","position":"center"}
         },
         "locations": {
-            "classroom":{"name":"Класс 2-B","bg_image":"bg_classroom"},
-            "rooftop":{"name":"Школьная крыша","bg_image":"bg_rooftop"},
-            "library":{"name":"Библиотека","bg_image":"bg_library"},
-            "courtyard":{"name":"Школьный двор","bg_image":"bg_courtyard"},
-            "cafeteria":{"name":"Столовая","bg_image":"bg_cafeteria"},
-            "gym":{"name":"Спортзал","bg_image":"bg_gym"},
-            "clubroom":{"name":"Клубная комната","bg_image":"bg_clubroom"},
-            "nursery":{"name":"Медкабинет","bg_image":"bg_nursery"},
-            "park":{"name":"Приморский парк","bg_image":"bg_park"},
-            "mall":{"name":"ТЦ Сакура-Молл","bg_image":"bg_mall"},
-            "beach":{"name":"Пляж","bg_image":"bg_beach"},
-            "shrine":{"name":"Храм","bg_image":"bg_shrine"},
-            "hallway":{"name":"Коридор","bg_image":"bg_hallway"},
-            "gate":{"name":"Школьные ворота","bg_image":"bg_gate"},
+            "classroom":{"name":"Класс 2-B","bg_image":"bg_classroom"},"rooftop":{"name":"Школьная крыша","bg_image":"bg_rooftop"},
+            "library":{"name":"Библиотека","bg_image":"bg_library"},"courtyard":{"name":"Школьный двор","bg_image":"bg_courtyard"},
+            "cafeteria":{"name":"Столовая","bg_image":"bg_cafeteria"},"gym":{"name":"Спортзал","bg_image":"bg_gym"},
+            "clubroom":{"name":"Клубная комната","bg_image":"bg_clubroom"},"nursery":{"name":"Медкабинет","bg_image":"bg_nursery"},
+            "park":{"name":"Приморский парк","bg_image":"bg_park"},"mall":{"name":"ТЦ Сакура-Молл","bg_image":"bg_mall"},
+            "beach":{"name":"Пляж","bg_image":"bg_beach"},"shrine":{"name":"Храм","bg_image":"bg_shrine"},
+            "hallway":{"name":"Коридор","bg_image":"bg_hallway"},"gate":{"name":"Школьные ворота","bg_image":"bg_gate"},
             "classroom_evening":{"name":"Класс вечером","bg_image":"bg_classroom_evening"}
         },
         "rules_for_ai": """ТЫ — JSON-ГЕНЕРАТОР. Отвечай ТОЛЬКО валидным JSON без текста вне него.
@@ -155,8 +123,24 @@ LOCAL_WORLDS = {
 РАЗРЕШЁННЫЕ SPEAKER_ID: narrator, garfild, monika, reiko, yuki, takeshi, hana, haru, akira, sensei, yumi, ryuu, emi
 РАЗРЕШЁННЫЕ ЭМОЦИИ: normal, happy, sad, angry, surprised, excited, serious, shy, flirty, worried, proud
 
-ФОРМАТ ОТВЕТА СТРОГО:
-{"time_of_day":"morning","response_type":"single_reply","narrator_text":"описание","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"текст","emotion":"normal","location":"classroom","dialog_end_marker":"silence","sprites":{"garfild":{"visible":true,"position":"left","highlight":true,"emotion":"normal"},"monika":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"reiko":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"yuki":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"takeshi":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"hana":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"haru":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"akira":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"sensei":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"yumi":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"ryuu":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"emi":{"visible":false,"position":"center","highlight":false,"emotion":"normal"}}}
+== СИСТЕМА ОТНОШЕНИЙ ==
+У каждого персонажа шкала отношений от -100 (ненависть) до +100 (любовь/лучшие друзья). 0 = нейтрально.
+Игрок влияет на отношения только значимыми поступками.
+
+Изменения:
++5: помог, защитил, комплимент, поддержал в споре
++10: серьёзная помощь, заступился перед учителем, подарил подарок
++15: спас от угрозы, раскрыл важный секрет, провёл особенное время
+-5: нагрубил, проигнорировал, опоздал
+-10: оскорбил, предал доверие, высмеял увлечение
+-15: серьёзное предательство, публичное унижение, угроза
+
+Тон речи зависит от отношений (учитывай это в speaker_text).
+
+ФОРМАТ ОТВЕТА:
+{"time_of_day":"morning","response_type":"single_reply","narrator_text":"описание","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"текст","emotion":"normal","location":"classroom","dialog_end_marker":"silence","relationship_changes":{"garfild":5},"sprites":{"garfild":{"visible":true,"position":"left","highlight":true,"emotion":"normal"},"monika":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"reiko":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"yuki":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"takeshi":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"hana":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"haru":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"akira":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"sensei":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"yumi":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"ryuu":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"emi":{"visible":false,"position":"center","highlight":false,"emotion":"normal"}}}
+
+relationship_changes включай ТОЛЬКО если действие изменило отношения. НЕ включай пустой relationship_changes.
 НЕ ПИШИ НИЧЕГО КРОМЕ JSON.""",
         "first_scene_prompt": "{player_name} просыпается утром первого учебного дня. По дороге в школу встречает одноклассников."
     }
@@ -213,6 +197,7 @@ def get_game_supabase(session_id):
             game = dict(result.data)
             if isinstance(game.get('game_history'), str): game['game_history'] = json.loads(game['game_history'])
             if isinstance(game.get('ai_context'), str): game['ai_context'] = json.loads(game['ai_context'])
+            if isinstance(game.get('relationships'), str): game['relationships'] = json.loads(game['relationships'])
             return game
     except: pass
     return None
@@ -220,7 +205,14 @@ def get_game_supabase(session_id):
 def save_game_supabase(game_data):
     if not supabase: return False
     try:
-        data = {'session_id': game_data['session_id'], 'player_name': game_data['player_name'], 'world_id': game_data.get('world_id','academy_sakura'), 'world_name': game_data.get('world_name','Академия Сакура'), 'status': game_data.get('status','active'), 'current_location': game_data.get('current_location','classroom'), 'game_history': json.dumps(game_data.get('game_history',[])), 'ai_context': json.dumps(game_data.get('ai_context',{}))}
+        data = {
+            'session_id': game_data['session_id'], 'player_name': game_data['player_name'],
+            'world_id': game_data.get('world_id','academy_sakura'), 'world_name': game_data.get('world_name','Академия Сакура'),
+            'status': game_data.get('status','active'), 'current_location': game_data.get('current_location','classroom'),
+            'game_history': json.dumps(game_data.get('game_history',[]), ensure_ascii=False),
+            'ai_context': json.dumps(game_data.get('ai_context',{}), ensure_ascii=False),
+            'relationships': json.dumps(game_data.get('relationships',{}), ensure_ascii=False)
+        }
         existing = supabase.table('game_sessions').select('id').eq('session_id', game_data['session_id']).execute()
         if existing.data: supabase.table('game_sessions').update(data).eq('session_id', game_data['session_id']).execute()
         else: supabase.table('game_sessions').insert(data).execute()
@@ -260,8 +252,8 @@ def call_deepseek(messages, max_tokens=800):
 def get_test_response():
     import random
     return random.choice([
-        {"narrator_text":"Солнечный свет заливает класс.","speaker_id":"monika","speaker_name":"Моника","speaker_text":"Привет! Добро пожаловать в Академию Сакура!","emotion":"happy","location":"classroom","sprites":{"garfild":{"visible":True,"position":"left","highlight":False,"emotion":"normal"},"monika":{"visible":True,"position":"center","highlight":True,"emotion":"happy"},"reiko":{"visible":True,"position":"right","highlight":False,"emotion":"normal"},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}},
-        {"narrator_text":"Гарфилд поправляет очки.","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"Приветствую. Я староста.","emotion":"serious","location":"classroom","sprites":{"garfild":{"visible":True,"position":"left","highlight":True,"emotion":"serious"},"monika":{"visible":True,"position":"center","highlight":False,"emotion":"normal"},"reiko":{"visible":False},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}}
+        {"time_of_day":"morning","response_type":"single_reply","narrator_text":"Солнечный свет заливает класс.","speaker_id":"monika","speaker_name":"Моника","speaker_text":"Привет! Добро пожаловать в Академию Сакура!","emotion":"happy","location":"classroom","dialog_end_marker":"silence","sprites":{"garfild":{"visible":True,"position":"left","highlight":False,"emotion":"normal"},"monika":{"visible":True,"position":"center","highlight":True,"emotion":"happy"},"reiko":{"visible":True,"position":"right","highlight":False,"emotion":"normal"},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}},
+        {"time_of_day":"morning","response_type":"single_reply","narrator_text":"Гарфилд поправляет очки.","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"Приветствую. Я староста.","emotion":"serious","location":"classroom","dialog_end_marker":"silence","sprites":{"garfild":{"visible":True,"position":"left","highlight":True,"emotion":"serious"},"monika":{"visible":True,"position":"center","highlight":False,"emotion":"normal"},"reiko":{"visible":False},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}}
     ])
 
 # ============================================
@@ -269,54 +261,46 @@ def get_test_response():
 # ============================================
 @app.route('/')
 def index():
-    # Проверяем авторизацию
     token = request.cookies.get('auth_token', '')
-    if not token:
-        return render_template('login.html')  # Сразу страница вход
-
-    # Проверяем валидность токена
-    user_login = token.split(':')[0]
-    user = get_user(user_login)
-    if not user:
-        return render_template('login.html')
-
+    if not token: return render_template('login.html')
+    user = get_user(token.split(':')[0])
+    if not user: return render_template('login.html')
     return render_template('index.html')
 
 @app.route('/login')
-def login_page():
-    return render_template('login.html')
+def login_page(): return render_template('login.html')
 
 @app.route('/register')
-def register_page():
-    return render_template('register.html')
+def register_page(): return render_template('register.html')
+
+@app.route('/saves')
+def saves_page():
+    token = request.cookies.get('auth_token', '')
+    if not token: return render_template('login.html')
+    user = get_user(token.split(':')[0])
+    if not user: return render_template('login.html')
+    return render_template('saves.html', user=user)
 
 @app.route('/game')
 def game_page():
     session_id = request.args.get('session', '')
     game = get_game(session_id)
-    if not game:
-        return "Игра не найдена", 404
+    if not game: return "Игра не найдена", 404
     user_agent = request.headers.get('User-Agent', '').lower()
     is_mobile = any(d in user_agent for d in ['mobile', 'android', 'iphone', 'ipad', 'ipod'])
     return render_template('game_mobile.html' if is_mobile else 'game.html', game=game)
 
 @app.route('/static/images/<path:filename>')
-def serve_image(filename):
-    return send_from_directory('static/images', filename)
+def serve_image(filename): return send_from_directory('static/images', filename)
 
-# API: миры
 @app.route('/api/worlds')
-def api_worlds():
-    return jsonify({'success': True, 'worlds': get_worlds_list()})
+def api_worlds(): return jsonify({'success': True, 'worlds': get_worlds_list()})
 
-# API: пользователи
 @app.route('/api/register', methods=['POST'])
 def api_register():
     data = request.get_json(force=True)
-    username = data.get('username','').strip()
-    login = data.get('login','').strip()
-    password = data.get('password','').strip()
-    pc = data.get('password_confirm','').strip()
+    username = data.get('username','').strip(); login = data.get('login','').strip()
+    password = data.get('password','').strip(); pc = data.get('password_confirm','').strip()
     dn = data.get('display_name','').strip() or username
     if not all([username, login, password]): return jsonify({'success': False, 'error': 'Все поля обязательны'}), 400
     if len(login) < 3 or len(password) < 4: return jsonify({'success': False, 'error': 'Минимум 3 символа логин, 4 пароль'}), 400
@@ -337,9 +321,7 @@ def api_login():
 
 @app.route('/api/logout', methods=['POST'])
 def api_logout():
-    resp = jsonify({'success': True})
-    resp.delete_cookie('auth_token')
-    return resp
+    resp = jsonify({'success': True}); resp.delete_cookie('auth_token'); return resp
 
 @app.route('/api/me')
 def api_me():
@@ -348,7 +330,6 @@ def api_me():
     user = get_user(token.split(':')[0])
     return jsonify({'success': True, 'user': {'username': user['username'], 'display_name': user.get('display_name', user['username']), 'is_admin': user.get('is_admin', False)}}) if user else jsonify({'success': False}), 401
 
-# API: игра
 @app.route('/api/create_game', methods=['POST'])
 def create_game():
     data = request.get_json(force=True)
@@ -360,8 +341,18 @@ def create_game():
     msgs = [{'role': 'system', 'content': wdb['rules_for_ai']}, {'role': 'user', 'content': wdb.get('first_scene_prompt','').replace('{player_name}', name)}]
     scene = call_deepseek(msgs) or get_test_response()
     scene['type'] = 'scene'
-    game_data = {'session_id': sid, 'player_name': name, 'world_id': wid, 'created_at': datetime.now().isoformat(), 'status': 'active', 'current_location': scene.get('location','classroom'), 'game_history': [scene], 'ai_context': {'world_id': wid, 'messages': msgs + [{'role': 'assistant', 'content': json.dumps(scene, ensure_ascii=False)}]}}
+    # Инициализация отношений
+    relationships = {}
+    for cid in wdb.get('characters', {}):
+        if cid != 'narrator': relationships[cid] = 0
+    game_data = {'session_id': sid, 'player_name': name, 'world_id': wid, 'created_at': datetime.now().isoformat(), 'status': 'active', 'current_location': scene.get('location','classroom'), 'game_history': [scene], 'relationships': relationships, 'ai_context': {'world_id': wid, 'messages': msgs + [{'role': 'assistant', 'content': json.dumps(scene, ensure_ascii=False)}], 'discovery': {}}}
     save_game(game_data)
+    # Синхронизация с профилем
+    token = request.cookies.get('auth_token', '')
+    if token and supabase and IS_PRODUCTION:
+        try:
+            supabase.table('player_saves').insert({'user_login': token.split(':')[0], 'session_id': sid, 'player_name': name, 'world_id': wid, 'world_name': wdb.get('world_name',''), 'current_location': scene.get('location','classroom'), 'last_scene_preview': (scene.get('speaker_text','') or scene.get('narrator_text',''))[:100], 'game_history': json.dumps([scene]), 'ai_context': json.dumps(game_data['ai_context']), 'relationships': json.dumps(relationships), 'status': 'active'}).execute()
+        except Exception as e: print(f"⚠️ Sync error: {e}")
     return jsonify({'success': True, 'session_id': sid, 'redirect': f'/game?session={sid}'})
 
 @app.route('/api/game_action', methods=['POST'])
@@ -374,6 +365,23 @@ def game_action():
     game['game_history'].append({'type': 'player_action', 'player_text': action})
     scene = call_deepseek(game['ai_context']['messages']) or get_test_response()
     scene['type'] = 'scene'
+    # Обработка отношений
+    if 'relationship_changes' in scene and scene['relationship_changes']:
+        if 'relationships' not in game: game['relationships'] = {}
+        for char_id, change in scene['relationship_changes'].items():
+            if char_id == 'narrator': continue
+            current = game['relationships'].get(char_id, 0)
+            new_value = max(-100, min(100, current + change))
+            game['relationships'][char_id] = new_value
+    # Автооткрытие персонажей
+    if 'sprites' in scene:
+        if 'discovery' not in game['ai_context']: game['ai_context']['discovery'] = {}
+        for char_id, sprite_data in scene['sprites'].items():
+            if char_id == 'narrator': continue
+            if sprite_data.get('visible') and not game['ai_context']['discovery'].get(char_id, {}).get('unlocked'):
+                game['ai_context']['discovery'][char_id] = {'unlocked': True, 'viewed': False, 'first_met': datetime.now().isoformat()}
+                scene['_new_discovery'] = scene.get('_new_discovery', [])
+                scene['_new_discovery'].append(char_id)
     game['ai_context']['messages'].append({'role': 'assistant', 'content': json.dumps(scene, ensure_ascii=False)})
     game['game_history'].append(scene)
     if 'location' in scene: game['current_location'] = scene['location']
@@ -386,11 +394,10 @@ def load_game_data():
     if not game: return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
     wdb = LOCAL_WORLDS.get(game.get('world_id','academy_sakura'), LOCAL_WORLDS['academy_sakura'])
     loc_name = wdb.get('locations',{}).get(game.get('current_location','classroom'),{}).get('name','Локация')
-    return jsonify({'success': True, 'game': {'session_id': game['session_id'], 'player_name': game['player_name'], 'world_id': game.get('world_id','academy_sakura'), 'current_location': game.get('current_location','classroom'), 'location_name': loc_name, 'game_history': game.get('game_history',[])}})
+    return jsonify({'success': True, 'game': {'session_id': game['session_id'], 'player_name': game['player_name'], 'world_id': game.get('world_id','academy_sakura'), 'current_location': game.get('current_location','classroom'), 'location_name': loc_name, 'game_history': game.get('game_history',[]), 'relationships': game.get('relationships',{})}})
 
-# API: сохранения
-@app.route('/api/saves')
-def api_saves():
+@app.route('/api/saves/list')
+def api_saves_list():
     token = request.cookies.get('auth_token','')
     if not token: return jsonify({'success': True, 'saves': []})
     ul = token.split(':')[0]
@@ -402,7 +409,7 @@ def api_saves():
         except: pass
     else:
         for sid, g in load_games_local().items():
-            saves.append({'session_id': sid, 'player_name': g.get('player_name',''), 'world_id': g.get('world_id',''), 'world_name': g.get('world_name',''), 'current_location': g.get('current_location',''), 'last_updated': g.get('created_at',''), 'status': g.get('status','active')})
+            saves.append({'session_id': sid, 'player_name': g.get('player_name',''), 'world_id': g.get('world_id',''), 'world_name': g.get('world_name',''), 'current_location': g.get('current_location',''), 'last_updated': g.get('created_at',''), 'created_at': g.get('created_at',''), 'last_scene_preview': g.get('last_scene_preview',''), 'status': g.get('status','active')})
         saves.sort(key=lambda x: x.get('last_updated',''), reverse=True)
     return jsonify({'success': True, 'saves': saves})
 
@@ -419,136 +426,58 @@ def api_saves_delete():
         if sid in g: del g[sid]; save_games_local(g)
     return jsonify({'success': True})
 
-@app.route('/api/health')
-def health():
-    return jsonify({'status': 'ok', 'mode': 'production' if IS_PRODUCTION else 'local', 'api': bool(DEEPSEEK_API_KEY), 'timestamp': datetime.now().isoformat()})
-
-
-@app.route('/saves')
-def saves_page():
-    """Страница всех сохранений игрока"""
-    token = request.cookies.get('auth_token', '')
-    if not token:
-        return render_template('login.html')
-
-    user_login = token.split(':')[0]
-    user = get_user(user_login)
-    if not user:
-        return render_template('login.html')
-
-    return render_template('saves.html', user=user)
-
-
-@app.route('/api/saves/list')
-def api_saves_list():
-    """Получить все сохранения с деталями"""
-    token = request.cookies.get('auth_token', '')
-    if not token:
-        return jsonify({'success': False, 'saves': []})
-
-    user_login = token.split(':')[0]
-    saves = []
-
-    if IS_PRODUCTION and supabase:
-        try:
-            result = supabase.table('player_saves') \
-                .select('*') \
-                .eq('user_login', user_login) \
-                .order('last_updated', desc=True) \
-                .execute()
-
-            if result.data:
-                for s in result.data:
-                    saves.append({
-                        'session_id': s['session_id'],
-                        'player_name': s.get('player_name', ''),
-                        'world_id': s.get('world_id', 'academy_sakura'),
-                        'world_name': s.get('world_name', 'Академия Сакура'),
-                        'created_at': s.get('created_at', ''),
-                        'last_updated': s.get('last_updated', ''),
-                        'current_location': s.get('current_location', ''),
-                        'last_scene_preview': s.get('last_scene_preview', ''),
-                        'status': s.get('status', 'active')
-                    })
-        except Exception as e:
-            print(f"❌ Error loading saves: {e}")
-    else:
-        games = load_games_local()
-        for sid, g in games.items():
-            saves.append({
-                'session_id': sid,
-                'player_name': g.get('player_name', ''),
-                'world_id': g.get('world_id', 'academy_sakura'),
-                'world_name': g.get('world_name', 'Академия Сакура'),
-                'created_at': g.get('created_at', ''),
-                'last_updated': g.get('created_at', ''),
-                'current_location': g.get('current_location', ''),
-                'last_scene_preview': g.get('last_scene_preview', ''),
-                'status': g.get('status', 'active')
-            })
-        saves.sort(key=lambda x: x.get('last_updated', ''), reverse=True)
-
-    return jsonify({'success': True, 'saves': saves})
-
-
 @app.route('/api/saves/sync', methods=['POST'])
 def api_sync_save():
-    """Синхронизировать текущую игру в player_saves"""
-    token = request.cookies.get('auth_token', '')
+    token = request.cookies.get('auth_token','')
     data = request.get_json(force=True)
-    session_id = data.get('session_id', '')
-
-    if not token or not session_id:
-        return jsonify({'success': False, 'error': 'Нет данных'}), 400
-
-    user_login = token.split(':')[0]
+    session_id = data.get('session_id','')
+    if not token or not session_id: return jsonify({'success': False}), 400
     game = get_game(session_id)
-
-    if not game:
-        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
-
-    # Получаем последнюю сцену для превью
+    if not game: return jsonify({'success': False}), 404
     last_scene = ''
     history = game.get('game_history', [])
     if history:
         last = history[-1]
-        if last.get('type') == 'player_action':
-            last_scene = '🗣️ ' + last.get('player_text', '')[:100]
-        else:
-            last_scene = (last.get('speaker_text', '') or last.get('narrator_text', ''))[:100]
-
+        last_scene = ('🗣️ ' + last.get('player_text','')) if last.get('type') == 'player_action' else (last.get('speaker_text','') or last.get('narrator_text',''))
     if IS_PRODUCTION and supabase:
         try:
-            save_data = {
-                'user_login': user_login,
-                'session_id': session_id,
-                'player_name': game['player_name'],
-                'world_id': game.get('world_id', 'academy_sakura'),
-                'world_name': game.get('world_name', 'Академия Сакура'),
-                'current_location': game.get('current_location', 'classroom'),
-                'last_scene_preview': last_scene,
-                'game_history': json.dumps(game.get('game_history', [])),
-                'ai_context': json.dumps(game.get('ai_context', {})),
-                'status': game.get('status', 'active'),
-                'last_updated': datetime.now().isoformat()
-            }
-
+            sd = {'user_login': token.split(':')[0], 'session_id': session_id, 'player_name': game['player_name'], 'world_id': game.get('world_id','academy_sakura'), 'world_name': game.get('world_name',''), 'current_location': game.get('current_location',''), 'last_scene_preview': last_scene[:100], 'game_history': json.dumps(game.get('game_history',[])), 'ai_context': json.dumps(game.get('ai_context',{})), 'relationships': json.dumps(game.get('relationships',{})), 'status': game.get('status','active'), 'last_updated': datetime.now().isoformat()}
             existing = supabase.table('player_saves').select('id').eq('session_id', session_id).execute()
-            if existing.data:
-                supabase.table('player_saves').update(save_data).eq('session_id', session_id).execute()
-            else:
-                supabase.table('player_saves').insert(save_data).execute()
-        except Exception as e:
-            print(f"❌ Sync error: {e}")
-    else:
-        # Локально обновляем
-        games = load_games_local()
-        if session_id in games:
-            games[session_id]['last_scene_preview'] = last_scene
-            games[session_id]['last_updated'] = datetime.now().isoformat()
-            save_games_local(games)
+            if existing.data: supabase.table('player_saves').update(sd).eq('session_id', session_id).execute()
+            else: supabase.table('player_saves').insert(sd).execute()
+        except Exception as e: print(f"❌ Sync error: {e}")
+    return jsonify({'success': True})
 
-    return jsonify({'success': True, 'message': 'Синхронизировано'})
+@app.route('/api/encyclopedia')
+def api_encyclopedia():
+    session_id = request.args.get('session','')
+    game = get_game(session_id)
+    wdb = LOCAL_WORLDS['academy_sakura']
+    chars = wdb.get('characters', {})
+    relationships = game.get('relationships', {}) if game else {}
+    discovery = game.get('ai_context', {}).get('discovery', {}) if game else {}
+    result = {}
+    for cid, c in chars.items():
+        if cid == 'narrator': continue
+        cd = discovery.get(cid, {})
+        result[cid] = {'id': cid, 'name': c.get('name', cid), 'emoji': c.get('emoji',''), 'sprite': c.get('sprite',''), 'text_color': c.get('text_color','#fff'), 'role': c.get('role',''), 'personality': c.get('personality',''), 'unlocked': cd.get('unlocked', False), 'viewed': cd.get('viewed', False), 'relationship': relationships.get(cid, 0)}
+    has_new = any(not c.get('viewed') and c.get('unlocked') for c in result.values())
+    return jsonify({'success': True, 'characters': result, 'has_new': has_new})
+
+@app.route('/api/encyclopedia/view', methods=['POST'])
+def api_encyclopedia_view():
+    data = request.get_json(force=True)
+    game = get_game(data.get('session_id',''))
+    if not game: return jsonify({'success': False}), 404
+    char_id = data.get('char_id','')
+    if 'discovery' not in game['ai_context']: game['ai_context']['discovery'] = {}
+    if char_id in game['ai_context']['discovery']: game['ai_context']['discovery'][char_id]['viewed'] = True
+    save_game(game)
+    return jsonify({'success': True})
+
+@app.route('/api/health')
+def health():
+    return jsonify({'status': 'ok', 'mode': 'production' if IS_PRODUCTION else 'local', 'api': bool(DEEPSEEK_API_KEY), 'timestamp': datetime.now().isoformat()})
 
 if __name__ == '__main__':
     print(f"🎮 RP Future | {'PRODUCTION' if IS_PRODUCTION else 'LOCAL'} | API: {'✅' if DEEPSEEK_API_KEY else '⚠️'}")

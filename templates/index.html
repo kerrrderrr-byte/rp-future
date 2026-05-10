@@ -295,6 +295,48 @@
             // Всегда показываем страницу со всеми сохранениями
             window.location.href = '/saves';
         }
+
+                // Модальные окна
+        function openNewGameModal() {
+            document.getElementById('newGameModal').style.display = 'flex';
+            loadWorlds();
+            document.getElementById('characterName').focus();
+        }
+        function closeNewGameModal() {
+            document.getElementById('newGameModal').style.display = 'none';
+        }
+        function closeLoadGameModal() {
+            document.getElementById('loadGameModal').style.display = 'none';
+        }
+        window.onclick = e => {
+            if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+        };
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        });
+
+        function showNotification(msg, type) {
+            const n = document.createElement('div');
+            n.className = 'notification ' + type;
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+
+        async function checkStatus() {
+            try {
+                await fetch(API + '/api/health');
+                document.getElementById('status').innerHTML = '🟢 Сервер работает';
+            } catch (e) {
+                document.getElementById('status').innerHTML = '🔴 Сервер офлайн';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkUser();
+            checkStatus();
+        });
+
     </script>
 </body>
 </html>
