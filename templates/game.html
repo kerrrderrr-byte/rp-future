@@ -231,7 +231,101 @@
         async function typeText(el,text,speed=TYPING_SPEED) { isTyping=true;el.textContent='';document.getElementById('typingCursor').style.display='inline-block';disableInput(); return new Promise(resolve=>{ let i=0; function type(){ if(i<text.length){ el.textContent+=text[i++]; const delay=(text[i-1]==='.'||text[i-1]==='!')?speed*5:(text[i-1]===',')?speed*2:speed+Math.random()*15; typingTimeout=setTimeout(type,delay); } else { document.getElementById('typingCursor').style.display='none';isTyping=false;resolve(); } } type(); }); }
         function skipTyping() { if(isTyping&&typingTimeout){ clearTimeout(typingTimeout);isTyping=false; const el=document.getElementById('typingText'); if(currentScene)el.textContent=currentScene.type==='player_action'?'🗣️ '+currentScene.player_text:(currentScene.speaker_text||''); document.getElementById('typingCursor').style.display='none';enableInput(); } }
 
-        async function displayDialog(scene) { const nb=document.getElementById('speakerNameBox'),te=document.getElementById('typingText'); for(let i=0;i<scene.dialog_chain.length;i++){ const line=scene.dialog_chain[i],sid=line.speaker; const sprite=document.getElementById('sprite-'+sid); if(sprite)sprite.classList.add('highlighted'); nb.style.display='block'; const ne=document.getElementById('speakerName');ne.textContent=CHAR_NAMES[sid]||sid; const bg=CHAR_COLORS[sid]||'#fff';ne.style.background=bg;ne.style.color='#000';ne.style.boxShadow=`0 4px 15px ${bg}44`; te.innerHTML='';document.getElementById('typingCursor').style.display='inline-block';document.getElementById('typingCursor').style.background=bg; const sp=document.createElement('span');sp.style.color=bg;te.appendChild(sp); await typeText(sp,line.text,30);await new Promise(r=>setTimeout(r,400)); if(i<scene.dialog_chain.length-1&&sprite)sprite.classList.remove('highlighted'); } updateSprites(scene.sprites);document.getElementById('typingCursor').style.display='none'; }
+        async function displayDialog(scene) {
+            const nameBox = document.getElementById('speakerNameBox');
+            const typingEl = document.getElementById('typingText');
+            const narratorEl = document.getElementById('narratorText');
+
+            console.log('🔗 Начинаем dialog_chain, реплик:', scene.dialog_chain.length);
+
+            // Сначала показываем narrator_text
+            if (scene.narrator_text) {
+                narratorEl.textContent = scene.narrator_text;
+                await new Promise(r => setTimeout(r, 600)); // Пауза чтобы прочитать описание
+            }
+
+            for (let i = 0; i < scene.dialog_chain.length; i++) {
+                const line = scene.dialog_chain[i];
+                const speakerId = line.speaker;
+
+                console.log(`  💬 Реплика ${i+1}: ${speakerId} — "${line.text.substring(0, 30)}..."`);
+
+                // Подсвечиваем говорящего
+                const sprite = document.getElementById('sprite-' + speakerId);
+                if (sprite) {
+                    // Убираем подсветку с предыдущего
+                    document.querySelectorAll('.character-sprite.highlighted').forEach(s => {
+                        if (s.id !== 'sprite-' + speakerId) s.classList.remove('highlighted');
+                    });
+                    sprite.classList.add('highlighted');
+                }
+
+                // Показываем имя говорящего
+                nameBox.style.display = 'block';
+                const nameEl = document.getElementById('speakerName');
+                nameEl.textContent = CHAR_NAMES[speakerId] || speakerId;
+                const bgColor = CHAR_COLORS[speakerId] || '#fff';
+                nameEl.style.background = bgColor;
+                nameEl.style.color = '#000';
+                nameEl.style.boxShadow = '0 4px 15px ' + bgColor + '44';
+
+                // Печатаем реплику
+                typingEl.innerHTML = '';
+                const cursorEl = document.getElementById('typingCursor');
+                cursorEl.style.display = 'inline-block';
+                cursorEl.style.background = bgColor;
+
+                const span = document.createElement('span');
+                span.style.color = bgColor;
+                typingEl.appendChild(span);
+
+                await typeText(span, line.text, 35); // Чуть медленнее для читаемости
+
+                // ВАЖНО: ЖДЁМ КЛИКА или ПРОБЕЛА перед следующей репликой
+                if (i < scene.dialog_chain.length - 1) {
+                    // Показываем подсказку
+                    const hint = document.createElement('div');
+                    hint.style.cssText = 'color: #666; font-size: 0.7em; text-align: center; margin-top: 4px;';
+                    hint.textContent = 'Нажми Пробел или кликни для продолжения...';
+                    typingEl.parentElement.appendChild(hint);
+
+                    // Ждём клика или пробела
+                    await waitForContinue();
+
+                    // Убираем подсказку
+                    if (hint.parentElement) hint.remove();
+
+                    // Убираем подсветку если не последняя реплика
+                    if (sprite && i < scene.dialog_chain.length - 1) {
+                        sprite.classList.remove('highlighted');
+                    }
+                }
+            }
+
+            // Финальная подсветка согласно sprites
+            if (scene.sprites) updateSprites(scene.sprites);
+
+            cursorEl.style.display = 'none';
+            console.log('🔗 dialog_chain завершён');
+        }
+
+        // Новая функция: ждать продолжения
+        function waitForContinue() {
+            return new Promise(resolve => {
+                function handler(e) {
+                    if (e.type === 'keydown' && e.key !== ' ' && e.key !== 'Enter') return;
+                    e.preventDefault();
+                    cleanup();
+                    resolve();
+                }
+                function cleanup() {
+                    document.removeEventListener('keydown', handler);
+                    document.removeEventListener('click', handler);
+                }
+                document.addEventListener('keydown', handler);
+                document.addEventListener('click', handler);
+            });
+        }
 
         async function displayScene(scene) {
             currentScene=scene; const nb=document.getElementById('speakerNameBox');nb.style.display='none';document.getElementById('narratorText').textContent='';document.getElementById('typingText').textContent='';disableInput();
