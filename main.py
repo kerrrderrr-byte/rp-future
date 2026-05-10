@@ -272,7 +272,7 @@ def index():
     # Проверяем авторизацию
     token = request.cookies.get('auth_token', '')
     if not token:
-        return render_template('login.html')  # Сразу страница входа
+        return render_template('login.html')  # Сразу страница вход
 
     # Проверяем валидность токена
     user_login = token.split(':')[0]
