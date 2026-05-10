@@ -1,0 +1,9 @@
+{
+  "ADMIN": {
+    "username": "ADMIN",
+    "login": "ADMIN",
+    "password_hash": "daaad6e5604e8e17bd9f108d91e26afe6281dac8fda0091040a7a6d7bd9b43b5",
+    "display_name": "Администратор",
+    "is_admin": true
+  }
+}

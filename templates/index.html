@@ -7,360 +7,144 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Philosopher:wght@400;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Comfortaa', cursive;
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
+            display: flex; justify-content: center; align-items: center;
         }
-
-        /* Основной контейнер */
         .container {
-            position: relative;
-            z-index: 2;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 30px;
-            padding: 50px 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 520px;
-            width: 90%;
-            animation: slideIn 1s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.95);
+            border-radius: 30px; padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center; max-width: 520px; width: 90%;
+            animation: slideIn 1s ease; border: 2px solid rgba(255,255,255,0.3);
         }
-
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(50px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         h1 {
-            font-family: 'Philosopher', sans-serif;
-            font-size: 2.5em;
+            font-family: 'Philosopher', sans-serif; font-size: 2.5em;
             background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 5px;
         }
-
-        .subtitle {
-            color: #888;
-            margin-bottom: 35px;
-            font-size: 0.9em;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-
+        .subtitle { color: #888; margin-bottom: 35px; font-size: 0.9em; letter-spacing: 3px; text-transform: uppercase; }
         .decorative-line {
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent);
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(138,43,226,0.3), transparent);
             margin: 25px 0;
         }
-
-        /* Кнопки */
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
+        .button-container { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
         .anime-button {
-            position: relative;
-            padding: 15px 40px;
-            font-family: 'Comfortaa', cursive;
-            font-size: 1em;
-            font-weight: 700;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            outline: none;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: white;
-            width: 100%;
+            position: relative; padding: 15px 40px;
+            font-family: 'Comfortaa', cursive; font-size: 1em; font-weight: 700;
+            border: none; border-radius: 50px; cursor: pointer;
+            transition: all 0.2s ease; outline: none;
+            text-transform: uppercase; letter-spacing: 2px; color: white; width: 100%;
         }
-
-        .anime-button.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 8px 25px rgba(107, 79, 160, 0.25);
-        }
-
-        .anime-button.secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.25);
-        }
-
-        .anime-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(107, 79, 160, 0.35);
-        }
-
-        .anime-button:active {
-            transform: translateY(1px);
-        }
-
-        /* Статус */
-        #status {
-            margin-top: 25px;
-            padding: 8px 20px;
-            border-radius: 20px;
-            background: rgba(76, 175, 80, 0.08);
-            color: #4caf50;
-            font-weight: 600;
-            font-size: 0.85em;
-            display: inline-block;
-        }
-
-        /* Модальное окно */
+        .anime-button.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 8px 25px rgba(107,79,160,0.25); }
+        .anime-button.secondary { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); box-shadow: 0 8px 25px rgba(240,147,251,0.25); }
+        .anime-button:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(107,79,160,0.35); }
+        .anime-button:active { transform: translateY(1px); }
+        #status { margin-top: 25px; padding: 8px 20px; border-radius: 20px; background: rgba(76,175,80,0.08); color: #4caf50; font-weight: 600; font-size: 0.85em; display: inline-block; }
+        .user-info { margin-bottom: 15px; color: #666; font-size: 0.9em; }
+        .user-info a { color: #764ba2; text-decoration: none; margin-left: 10px; }
+        /* Модальные */
         .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(10px);
-            justify-content: center;
-            align-items: center;
-            overflow-y: auto;
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            justify-content: center; align-items: center; overflow-y: auto;
         }
-
         .modal-content {
-            background: white;
-            padding: 40px;
-            border-radius: 30px;
-            width: 90%;
-            max-width: 480px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: modalSlide 0.5s ease;
+            background: white; padding: 40px; border-radius: 30px;
+            width: 90%; max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: modalSlide 0.5s ease;
             margin: 20px;
         }
-
-        @keyframes modalSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-content h2 {
-            color: #6b4fa0;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-            text-align: center;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #764ba2;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-
-        .label-icon {
-            margin-right: 5px;
-        }
-
+        @keyframes modalSlide { from { opacity: 0; transform: translateY(-100px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-content h2 { color: #6b4fa0; margin-bottom: 25px; font-size: 1.8em; text-align: center; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; color: #764ba2; font-weight: 600; font-size: 0.9em; }
+        .label-icon { margin-right: 5px; }
         .anime-input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #e0d5f5;
-            border-radius: 25px;
-            font-family: 'Comfortaa', cursive;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            outline: none;
-            background: #fafafa;
+            width: 100%; padding: 12px 20px;
+            border: 2px solid #e0d5f5; border-radius: 25px;
+            font-family: 'Comfortaa', cursive; font-size: 1em;
+            transition: all 0.3s ease; outline: none; background: #fafafa;
         }
-
-        .anime-input:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 15px rgba(118, 75, 162, 0.2);
-            background: white;
-        }
-
-        select.anime-input {
-            appearance: auto;
-            cursor: pointer;
-        }
-
-        .input-hint {
-            font-size: 0.8em;
-            color: #999;
-            margin-top: 5px;
-            padding-left: 15px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-            justify-content: center;
-        }
-
-        .modal-buttons .anime-button {
-            flex: 1;
-        }
-
+        .anime-input:focus { border-color: #764ba2; box-shadow: 0 0 15px rgba(118,75,162,0.2); background: white; }
+        select.anime-input { appearance: auto; cursor: pointer; }
+        .input-hint { font-size: 0.8em; color: #999; margin-top: 5px; padding-left: 15px; }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 25px; justify-content: center; }
+        .modal-buttons .anime-button { flex: 1; }
         .world-preview {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 15px;
-            margin-top: 10px;
-            border: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px; background: rgba(102,126,234,0.05); border-radius: 15px;
+            margin-top: 10px; border: 1px solid rgba(102,126,234,0.1);
         }
-
-        .world-preview-icon {
-            font-size: 2em;
-        }
-
-        .world-preview-info {
-            flex: 1;
-        }
-
-        .world-preview-name {
-            font-weight: 700;
-            color: #6b4fa0;
-        }
-
-        .world-preview-desc {
-            font-size: 0.85em;
-            color: #888;
-            margin-top: 3px;
-        }
-
+        .world-preview-icon { font-size: 2em; }
+        .world-preview-info { flex: 1; }
+        .world-preview-name { font-weight: 700; color: #6b4fa0; }
+        .world-preview-desc { font-size: 0.85em; color: #888; margin-top: 3px; }
         .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 25px;
-            color: white;
-            font-weight: 600;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 350px;
+            position: fixed; top: 20px; right: 20px;
+            padding: 15px 25px; border-radius: 25px; color: white;
+            font-weight: 600; z-index: 2000; animation: slideNot 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 350px;
         }
-
-        .notification.success {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .notification.success { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .notification.error { background: linear-gradient(135deg, #f5576c, #f093fb); }
+        @keyframes slideNot { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        /* Сохранения */
+        .sessions-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        .session-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.7); padding: 12px 15px;
+            margin-bottom: 8px; border-radius: 15px; cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .notification.error {
-            background: linear-gradient(135deg, #f5576c, #f093fb);
+        .session-item:hover { background: rgba(255,255,255,0.95); transform: translateX(5px); }
+        .session-info { flex: 1; }
+        .session-character { font-weight: 600; color: #6b4fa0; }
+        .session-world, .session-location { font-size: 0.8em; color: #888; }
+        .session-delete {
+            background: none; border: none; font-size: 1.2em;
+            cursor: pointer; padding: 5px 10px; opacity: 0.5; transition: opacity 0.3s;
         }
-
-        @keyframes slideIn {
-            from { transform: translateX(100px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100px); opacity: 0; }
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 30px 20px;
-            }
-            h1 {
-                font-size: 2em;
-            }
-            .modal-content {
-                padding: 30px 25px;
-                margin: 15px;
-            }
-        }
+        .session-delete:hover { opacity: 1; }
+        .no-sessions, .loading { text-align: center; padding: 20px; color: #999; }
     </style>
 </head>
 <body>
-    <!-- Основной контейнер -->
     <div class="container">
+        <div class="user-info" id="userInfo">Загрузка...</div>
         <h1>Приветствуем в RP Future</h1>
         <div class="subtitle">✦ Генеративная новелла с ИИ ✦</div>
-
         <div class="decorative-line"></div>
-
         <div class="button-container">
-            <button class="anime-button primary" onclick="openNewGameModal()">
-                ✦ Начать новую игру ✦
-            </button>
-
-            <button class="anime-button secondary" onclick="continueGame()">
-                ♥ Продолжить игру ♥
-            </button>
+            <button class="anime-button primary" onclick="openNewGameModal()">✦ Начать новую игру ✦</button>
+            <button class="anime-button secondary" onclick="continueGame()">♥ Продолжить игру ♥</button>
         </div>
-
         <div class="decorative-line"></div>
-
-        <div id="status">
-            🟢 Сервер работает
-        </div>
+        <div id="status">🟢 Сервер работает</div>
     </div>
 
-    <!-- Модальное окно для новой игры -->
+    <!-- Модальное: новая игра -->
     <div id="newGameModal" class="modal">
         <div class="modal-content">
             <h2>✨ Создание персонажа ✨</h2>
-
             <div class="input-group">
-                <label for="characterName">
-                    <span class="label-icon">👤</span>
-                    Имя персонажа:
-                </label>
-                <input type="text"
-                       id="characterName"
-                       class="anime-input"
-                       placeholder="Введите имя героя..."
-                       maxlength="50"
-                       autocomplete="off">
+                <label><span class="label-icon">👤</span>Имя персонажа:</label>
+                <input type="text" id="characterName" class="anime-input" placeholder="Введите имя героя..." maxlength="50" autocomplete="off">
                 <div class="input-hint">Например: Юки, Харуки, Сакура...</div>
             </div>
-
             <div class="input-group">
-                <label for="worldSelect">
-                    <span class="label-icon">🌍</span>
-                    Выбери мир:
-                </label>
-                <select id="worldSelect" class="anime-input" onchange="updateWorldPreview()">
-                    <option value="">Загрузка миров...</option>
-                </select>
+                <label><span class="label-icon">🌍</span>Выбери мир:</label>
+                <select id="worldSelect" class="anime-input" onchange="updateWorldPreview()"><option value="">Загрузка...</option></select>
                 <div class="world-preview" id="worldPreview" style="display:none;">
                     <div class="world-preview-icon" id="worldPreviewIcon">🏫</div>
                     <div class="world-preview-info">
@@ -369,309 +153,162 @@
                     </div>
                 </div>
             </div>
-
             <div class="modal-buttons">
-                <button class="anime-button primary" onclick="startNewGame()">
-                    ✦ Начать приключение ✦
-                </button>
-                <button class="anime-button secondary" onclick="closeNewGameModal()">
-                    ✕ Отмена
-                </button>
+                <button class="anime-button primary" onclick="startNewGame()">✦ Начать приключение ✦</button>
+                <button class="anime-button secondary" onclick="closeNewGameModal()">✕ Отмена</button>
             </div>
         </div>
     </div>
 
-    <!-- Модальное окно для загрузки игры -->
+    <!-- Модальное: загрузка -->
     <div id="loadGameModal" class="modal">
         <div class="modal-content">
             <h2>📜 Загрузить игру</h2>
-
-            <div id="sessionsList" class="sessions-list">
-                <div class="loading">Загрузка сохранений...</div>
-            </div>
-
+            <div class="sessions-list" id="sessionsList"><div class="loading">Загрузка...</div></div>
             <div class="modal-buttons">
-                <button class="anime-button secondary" onclick="closeLoadGameModal()">
-                    ✕ Закрыть
-                </button>
+                <button class="anime-button secondary" onclick="closeLoadGameModal()">✕ Закрыть</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
-        const API_BASE_URL = window.location.origin;
+        const API = window.location.origin;
         let availableWorlds = [];
+        let currentUser = null;
 
-        // ==================== МОДАЛЬНЫЕ ОКНА ====================
-        function openNewGameModal() {
-            document.getElementById('newGameModal').style.display = 'flex';
-            document.getElementById('characterName').focus();
-            loadWorlds();
-        }
-
-        function closeNewGameModal() {
-            document.getElementById('newGameModal').style.display = 'none';
-            document.getElementById('characterName').value = '';
-            document.getElementById('worldSelect').value = '';
-            document.getElementById('worldPreview').style.display = 'none';
-        }
-
-        function openLoadGameModal() {
-            document.getElementById('loadGameModal').style.display = 'flex';
-            loadSavedSessions();
-        }
-
-        function closeLoadGameModal() {
-            document.getElementById('loadGameModal').style.display = 'none';
-        }
-
-        // ==================== ЗАГРУЗКА МИРОВ ====================
-        async function loadWorlds() {
-            const select = document.getElementById('worldSelect');
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/worlds`);
-                const data = await response.json();
-
-                if (data.success && data.worlds && data.worlds.length > 0) {
-                    availableWorlds = data.worlds;
-
-                    select.innerHTML = data.worlds.map(world =>
-                        `<option value="${world.world_id}">${world.name} — ${world.genre || 'приключение'}</option>`
-                    ).join('');
-
-                    updateWorldPreview();
+        // Пользователь
+        async function checkUser(){
+            try{
+                const r = await fetch(API+'/api/me');
+                const d = await r.json();
+                if(d.success){
+                    currentUser = d.user;
+                    document.getElementById('userInfo').innerHTML = `👤 ${d.user.display_name} <a href="#" onclick="logout()">Выйти</a>`;
                 } else {
-                    select.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>';
-                    updateWorldPreview();
+                    document.getElementById('userInfo').innerHTML = '<a href="/login">Войти</a> | <a href="/register">Регистрация</a>';
                 }
-            } catch (error) {
-                console.error('Ошибка загрузки миров:', error);
-                select.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>';
+            }catch(e){}
+        }
+        async function logout(){
+            await fetch(API+'/api/logout',{method:'POST'});
+            window.location.reload();
+        }
+
+        // Миры
+        async function loadWorlds(){
+            const sel = document.getElementById('worldSelect');
+            try{
+                const r = await fetch(API+'/api/worlds');
+                const d = await r.json();
+                if(d.success && d.worlds.length){
+                    availableWorlds = d.worlds;
+                    sel.innerHTML = d.worlds.map(w=>`<option value="${w.world_id}">${w.name} — ${w.genre||'приключение'}</option>`).join('');
+                } else {
+                    sel.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>';
+                }
                 updateWorldPreview();
-            }
+            }catch(e){ sel.innerHTML = '<option value="academy_sakura">Академия Сакура — школа</option>'; }
         }
-
-        function updateWorldPreview() {
-            const select = document.getElementById('worldSelect');
+        function updateWorldPreview(){
             const preview = document.getElementById('worldPreview');
-            const worldId = select.value;
-
-            if (!worldId || !availableWorlds.length) {
-                preview.style.display = 'none';
-                return;
-            }
-
-            const world = availableWorlds.find(w => w.world_id === worldId);
-
-            if (world) {
-                preview.style.display = 'flex';
+            const worldId = document.getElementById('worldSelect').value;
+            const world = availableWorlds.find(w=>w.world_id===worldId);
+            if(world){
+                preview.style.display='flex';
                 document.getElementById('worldPreviewName').textContent = world.name;
-                document.getElementById('worldPreviewDesc').textContent = world.description || '';
-
-                // Иконка по жанру
-                const icons = {
-                    'school': '🏫',
-                    'cyberpunk': '🌃',
-                    'fantasy': '🏰',
-                    'scifi': '🚀'
-                };
-                document.getElementById('worldPreviewIcon').textContent =
-                    icons[world.genre] || '🌍';
-            }
+                document.getElementById('worldPreviewDesc').textContent = world.description||'';
+                document.getElementById('worldPreviewIcon').textContent = ({school:'🏫',cyberpunk:'🌃',fantasy:'🏰',scifi:'🚀'})[world.genre]||'🌍';
+            } else { preview.style.display='none'; }
         }
 
-        // ==================== НАЧАТЬ НОВУЮ ИГРУ ====================
-        async function startNewGame() {
-            const characterName = document.getElementById('characterName').value.trim();
-            const worldSelect = document.getElementById('worldSelect');
-            const worldId = worldSelect.value || 'academy_sakura';
-
-            if (!characterName) {
-                showNotification('Пожалуйста, введи имя персонажа!', 'error');
-                document.getElementById('characterName').focus();
-                return;
-            }
-
-            const button = document.querySelector('#newGameModal .anime-button.primary');
-            button.disabled = true;
-            button.textContent = '⏳ Создаём...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/create_game`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        character_name: characterName,
-                        world_id: worldId
-                    })
+        // Новая игра
+        async function startNewGame(){
+            const name = document.getElementById('characterName').value.trim();
+            const worldId = document.getElementById('worldSelect').value || 'academy_sakura';
+            if(!name){ showNotification('Введи имя!','error'); return; }
+            try{
+                const r = await fetch(API+'/api/create_game',{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify({character_name:name,world_id:worldId})
                 });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    localStorage.setItem('currentSessionId', data.session_id);
-                    localStorage.setItem('currentCharacterName', characterName);
-                    localStorage.setItem('currentWorldId', worldId);
-
-                    closeNewGameModal();
-                    showNotification('✨ Приключение начинается!', 'success');
-
-                    setTimeout(() => {
-                        window.location.href = data.redirect;
-                    }, 800);
-                } else {
-                    showNotification(data.error || 'Ошибка при создании игры', 'error');
-                    button.disabled = false;
-                    button.textContent = '✦ Начать приключение ✦';
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка соединения с сервером', 'error');
-                button.disabled = false;
-                button.textContent = '✦ Начать приключение ✦';
-            }
+                const d = await r.json();
+                if(d.success){
+                    localStorage.setItem('currentSessionId', d.session_id);
+                    window.location.href = d.redirect;
+                } else showNotification(d.error,'error');
+            }catch(e){ showNotification('Ошибка соединения','error'); }
         }
 
-        // ==================== ПРОДОЛЖИТЬ ИГРУ ====================
-        async function continueGame() {
-            const sessionId = localStorage.getItem('currentSessionId');
-
-            if (sessionId) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/load_game_data?session=${sessionId}`);
-                    const data = await response.json();
-
-                    if (data.success) {
-                        showNotification('👋 С возвращением!', 'success');
-                        setTimeout(() => {
-                            window.location.href = `/game?session=${sessionId}`;
-                        }, 800);
-                    } else {
-                        localStorage.removeItem('currentSessionId');
-                        openLoadGameModal();
-                    }
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                    openLoadGameModal();
-                }
-            } else {
-                showNotification('Нет сохранённых игр. Начни новую!', 'error');
+        // Продолжить
+        async function continueGame(){
+            const sid = localStorage.getItem('currentSessionId');
+            if(sid){
+                try{
+                    const r = await fetch(API+'/api/load_game_data?session='+sid);
+                    const d = await r.json();
+                    if(d.success){ window.location.href='/game?session='+sid; return; }
+                }catch(e){}
             }
+            document.getElementById('loadGameModal').style.display='flex';
+            loadSaves();
         }
 
-        // ==================== ЗАГРУЗКА СОХРАНЕНИЙ ====================
-        async function loadSavedSessions() {
-            const sessionsList = document.getElementById('sessionsList');
-            sessionsList.innerHTML = '<div class="loading">Загрузка сохранений...</div>';
-
-            // Показываем только локальные сохранения
-            const sessionId = localStorage.getItem('currentSessionId');
-            const characterName = localStorage.getItem('currentCharacterName');
-            const worldId = localStorage.getItem('currentWorldId');
-
-            if (sessionId) {
-                sessionsList.innerHTML = `
-                    <div class="session-item" onclick="loadSession('${sessionId}')">
-                        <div class="session-info">
-                            <div class="session-character">👤 ${characterName || 'Персонаж'}</div>
-                            <div class="session-world">🌍 Мир: ${worldId || 'unknown'}</div>
-                            <div class="session-date">📅 Последняя игра</div>
-                        </div>
-                        <div class="session-status">🟢 active</div>
-                    </div>
-                `;
-            } else {
-                sessionsList.innerHTML = '<div class="no-sessions">😢 Нет сохранённых игр</div>';
-            }
+        async function loadSaves(){
+            const list = document.getElementById('sessionsList');
+            list.innerHTML='<div class="loading">Загрузка...</div>';
+            try{
+                const r = await fetch(API+'/api/saves');
+                const d = await r.json();
+                if(d.success && d.saves.length){
+                    list.innerHTML = d.saves.map(s=>`
+                        <div class="session-item">
+                            <div class="session-info" onclick="loadSession('${s.session_id}')">
+                                <div class="session-character">👤 ${s.player_name}</div>
+                                <div class="session-world">🌍 ${s.world_name||s.world_id}</div>
+                                <div class="session-location">📍 ${s.current_location}</div>
+                            </div>
+                            <button class="session-delete" onclick="event.stopPropagation();deleteSave('${s.session_id}')">🗑️</button>
+                        </div>`).join('');
+                } else list.innerHTML='<div class="no-sessions">Нет сохранений</div>';
+            }catch(e){ list.innerHTML='<div class="no-sessions">Ошибка загрузки</div>'; }
         }
 
-        async function loadSession(sessionId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/load_game_data?session=${sessionId}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    closeLoadGameModal();
-                    showNotification('👋 С возвращением!', 'success');
-                    setTimeout(() => {
-                        window.location.href = `/game?session=${sessionId}`;
-                    }, 800);
-                } else {
-                    showNotification('Игра не найдена', 'error');
-                    localStorage.removeItem('currentSessionId');
-                }
-            } catch (error) {
-                showNotification('Ошибка соединения', 'error');
-            }
+        async function loadSession(sid){
+            localStorage.setItem('currentSessionId', sid);
+            window.location.href='/game?session='+sid;
         }
 
-        // ==================== УВЕДОМЛЕНИЯ ====================
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease forwards';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+        async function deleteSave(sid){
+            if(!confirm('Удалить?')) return;
+            await fetch(API+'/api/saves/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sid})});
+            if(localStorage.getItem('currentSessionId')===sid) localStorage.removeItem('currentSessionId');
+            loadSaves();
         }
 
-        // ==================== ПРОВЕРКА СТАТУСА ====================
-        async function checkServerStatus() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                const data = await response.json();
+        // Модальные
+        function openNewGameModal(){ document.getElementById('newGameModal').style.display='flex'; loadWorlds(); document.getElementById('characterName').focus(); }
+        function closeNewGameModal(){ document.getElementById('newGameModal').style.display='none'; }
+        function closeLoadGameModal(){ document.getElementById('loadGameModal').style.display='none'; }
+        window.onclick = e=>{ if(e.target.classList.contains('modal')) e.target.style.display='none'; };
+        document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); });
 
-                const statusEl = document.getElementById('status');
-                if (data.status === 'ok') {
-                    statusEl.innerHTML = '🟢 Сервер онлайн';
-                    if (data.api) {
-                        statusEl.innerHTML += ' | 🤖 AI готов';
-                    }
-                }
-            } catch (error) {
-                document.getElementById('status').innerHTML = '🔴 Сервер офлайн';
-            }
+        function showNotification(msg,type){
+            const n = document.createElement('div');
+            n.className='notification '+type; n.textContent=msg;
+            document.body.appendChild(n);
+            setTimeout(()=>n.remove(), 3000);
         }
 
-        // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
-
-        // Закрытие модальных окон по клику вне
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
+        async function checkStatus(){
+            try{ await fetch(API+'/api/health'); document.getElementById('status').innerHTML='🟢 Сервер работает'; }
+            catch(e){ document.getElementById('status').innerHTML='🔴 Сервер офлайн'; }
         }
 
-        // Закрытие по Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.style.display = 'none';
-                });
-            }
-            // Enter для отправки формы
-            if (e.key === 'Enter' && document.getElementById('newGameModal').style.display === 'flex') {
-                e.preventDefault();
-                startNewGame();
-            }
-        });
-
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-        document.addEventListener('DOMContentLoaded', function() {
-            checkServerStatus();
-
-            // Проверяем сохранённую игру
-            const savedSession = localStorage.getItem('currentSessionId');
-            if (savedSession) {
-                console.log('🎮 Найдена сохранённая игра:', savedSession);
-            }
-
-            console.log('🎮 RP Future - Главная страница загружена');
+        document.addEventListener('DOMContentLoaded',()=>{
+            checkUser();
+            checkStatus();
+            if(localStorage.getItem('currentSessionId')) console.log('Сохранённая игра найдена');
         });
     </script>
 </body>

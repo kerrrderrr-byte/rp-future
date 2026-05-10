@@ -5,64 +5,109 @@ from datetime import datetime
 import json
 import os
 import requests
+import hashlib
+import socket
+from functools import wraps
 from dotenv import load_dotenv
 
-# Загружаем .env
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24).hex())
-
-import socket
-
 socket.setdefaulttimeout(60)
 
 # ============================================
 # КОНФИГУРАЦИЯ
 # ============================================
 IS_PRODUCTION = os.getenv('RENDER', False) or os.getenv('PRODUCTION', False)
-
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
-
 DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', '')
 DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 
 STORAGE_FILE = 'games_storage.json'
+USERS_FILE = 'users_storage.json'
 
-
-@app.route('/game')
-def game_page():
-    session_id = request.args.get('session', '')
-    game = get_game(session_id)
-    if not game:
-        return "Игра не найдена. Начните новую игру!", 404
-
-    # Определяем мобильное устройство
-    user_agent = request.headers.get('User-Agent', '').lower()
-    is_mobile = any(device in user_agent for device in ['mobile', 'android', 'iphone', 'ipad', 'ipod'])
-
-    if is_mobile:
-        return render_template('game_mobile.html', game=game)
-    return render_template('game.html', game=game)
-
-# Supabase клиент
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         from supabase import create_client
-
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         print("✅ Supabase подключен")
     except Exception as e:
         print(f"⚠️ Supabase error: {e}")
 
 # ============================================
-# WORLD SERVICE (Загрузка миров из Supabase или локально)
+# ХЕШИ
 # ============================================
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-# Локальная БД миров (используется если Supabase недоступен)
+# ============================================
+# ПОЛЬЗОВАТЕЛИ
+# ============================================
+def load_users_local():
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                return json.loads(content) if content else {}
+        except:
+            pass
+    default = {
+        'ADMIN': {
+            'username': 'ADMIN',
+            'login': 'ADMIN',
+            'password_hash': hash_password('qwerty123'),
+            'display_name': 'Администратор',
+            'is_admin': True
+        }
+    }
+    save_users_local(default)
+    return default
+
+def save_users_local(users):
+    with open(USERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+
+def get_user(login):
+    if IS_PRODUCTION and supabase:
+        try:
+            result = supabase.table('users').select('*').eq('login', login).single().execute()
+            return result.data
+        except:
+            return None
+    return load_users_local().get(login)
+
+def create_user(username, login, password, display_name):
+    if IS_PRODUCTION and supabase:
+        try:
+            supabase.table('users').insert({
+                'username': username, 'login': login,
+                'password_hash': hash_password(password),
+                'display_name': display_name, 'is_admin': False
+            }).execute()
+            return True, 'Пользователь создан'
+        except Exception as e:
+            return False, str(e)
+    else:
+        users = load_users_local()
+        if login in users:
+            return False, 'Логин занят'
+        if any(u['username'] == username for u in users.values()):
+            return False, 'Имя занято'
+        users[login] = {
+            'username': username, 'login': login,
+            'password_hash': hash_password(password),
+            'display_name': display_name, 'is_admin': False
+        }
+        save_users_local(users)
+        return True, 'Пользователь создан'
+
+# ============================================
+# МИРЫ (локальные)
+# ============================================
 LOCAL_WORLDS = {
     "academy_sakura": {
         "world_name": "Академия Сакура",
@@ -72,233 +117,77 @@ LOCAL_WORLDS = {
         "genre": "school",
         "description": "Школьная повседневность в японской старшей школе",
         "image_url": "/static/images/worlds/school_preview.png",
-
         "characters": {
-            "narrator": {
-                "id": "narrator", "name": "Рассказчик", "role": "narrator",
-                "personality": "Нейтральный повествователь",
-                "speaking_style": "Литературный, описательный",
-                "text_color": "#c0c0c0", "sprite": None
-            },
-            "garfild": {
-                "id": "garfild", "name": "Гарфилд", "role": "староста класса",
-                "personality": "Ответственный перфекционист, тайно пишет стихи",
-                "speaking_style": "Вежливый, правильная речь",
-                "text_color": "#ff8c42", "emoji": "📋",
-                "sprite": "boy_garfild", "position": "left"
-            },
-            "monika": {
-                "id": "monika", "name": "Моника", "role": "президент клуба литературы",
-                "personality": "Харизматичная, загадочная, скрывает одиночество",
-                "speaking_style": "Элегантный, с цитатами",
-                "text_color": "#ff69b4", "emoji": "📚",
-                "sprite": "girl_monika", "position": "center"
-            },
-            "reiko": {
-                "id": "reiko", "name": "Рейко", "role": "спортсменка",
-                "personality": "Энергичная, весёлая, боится потерять стипендию из-за травмы",
-                "speaking_style": "Эмоциональный, быстрый",
-                "text_color": "#00d4aa", "emoji": "🏃‍♀️",
-                "sprite": "girl_reiko", "position": "right"
-            },
-            "yuki": {
-                "id": "yuki", "name": "Юки", "role": "тихая художница",
-                "personality": "Застенчивая, говорит через искусство",
-                "speaking_style": "Тихий, с паузами",
-                "text_color": "#b8a9d4", "emoji": "🎨",
-                "sprite": "girl_yuki", "position": "left"
-            },
-            "takeshi": {
-                "id": "takeshi", "name": "Такеши", "role": "хулиган с золотым сердцем",
-                "personality": "Грубый снаружи, защищает слабых",
-                "speaking_style": "Грубоватый, но искренний",
-                "text_color": "#ff4444", "emoji": "👊",
-                "sprite": "boy_takeshi", "position": "right"
-            },
-            "hana": {
-                "id": "hana", "name": "Хана", "role": "президент студсовета",
-                "personality": "Идеальная, соперничает с Моникой, тайно влюблена в Гарфилда",
-                "speaking_style": "Формальный, холодный",
-                "text_color": "#4da6ff", "emoji": "👑",
-                "sprite": "girl_hana", "position": "center"
-            },
-            "haru": {
-                "id": "haru", "name": "Хару", "role": "лучший друг-весельчак",
-                "personality": "Шутник, но очень наблюдательный",
-                "speaking_style": "Шутливый, с прибаутками",
-                "text_color": "#ffd700", "emoji": "😄",
-                "sprite": "boy_haru", "position": "left"
-            },
-            "akira": {
-                "id": "akira", "name": "Акира", "role": "геймер и программист",
-                "personality": "Интроверт, создаёт игры",
-                "speaking_style": "Технический, с IT-терминами",
-                "text_color": "#7cfc00", "emoji": "💻",
-                "sprite": "boy_akira", "position": "right"
-            },
-            "sensei": {
-                "id": "sensei", "name": "Танака-сенсей", "role": "классный руководитель",
-                "personality": "Мудрый, понимающий, сам пишет роман",
-                "speaking_style": "Учительский, с советами",
-                "text_color": "#deb887", "emoji": "👨‍🏫",
-                "sprite": "boy_sensei", "position": "center"
-            },
-            "yumi": {
-                "id": "yumi", "name": "Юми", "role": "школьная медсестра",
-                "personality": "Добрая, заботливая, в прошлом байкер",
-                "speaking_style": "Мягкий, успокаивающий",
-                "text_color": "#ff9999", "emoji": "💉",
-                "sprite": "girl_yumi", "position": "left"
-            },
-            "ryuu": {
-                "id": "ryuu", "name": "Рю", "role": "капитан клуба кендо",
-                "personality": "Молчаливый, дисциплинированный",
-                "speaking_style": "Краткий, афоризмами",
-                "text_color": "#808080", "emoji": "⚔️",
-                "sprite": "boy_ryuu", "position": "right"
-            },
-            "emi": {
-                "id": "emi", "name": "Эми", "role": "журналист школьной газеты",
-                "personality": "Любопытная, везде ищет сенсации",
-                "speaking_style": "Быстрый, с вопросами",
-                "text_color": "#ff1493", "emoji": "📰",
-                "sprite": "girl_emi", "position": "center"
-            }
+            "narrator": {"id":"narrator","name":"Рассказчик","role":"narrator","personality":"Нейтральный","speaking_style":"Литературный","text_color":"#c0c0c0","sprite":None},
+            "garfild": {"id":"garfild","name":"Гарфилд","role":"староста","personality":"Перфекционист, тайно пишет стихи","speaking_style":"Вежливый","text_color":"#ff8c42","emoji":"📋","sprite":"boy_garfild","position":"left"},
+            "monika": {"id":"monika","name":"Моника","role":"президент литклуба","personality":"Харизматичная, загадочная","speaking_style":"Элегантный","text_color":"#ff69b4","emoji":"📚","sprite":"girl_monika","position":"center"},
+            "reiko": {"id":"reiko","name":"Рейко","role":"спортсменка","personality":"Энергичная, боится травмы","speaking_style":"Эмоциональный","text_color":"#00d4aa","emoji":"🏃‍♀️","sprite":"girl_reiko","position":"right"},
+            "yuki": {"id":"yuki","name":"Юки","role":"художница","personality":"Застенчивая","speaking_style":"Тихий","text_color":"#b8a9d4","emoji":"🎨","sprite":"girl_yuki","position":"left"},
+            "takeshi": {"id":"takeshi","name":"Такеши","role":"хулиган","personality":"Грубый, но добрый","speaking_style":"Грубоватый","text_color":"#ff4444","emoji":"👊","sprite":"boy_takeshi","position":"right"},
+            "hana": {"id":"hana","name":"Хана","role":"президент студсовета","personality":"Властная, тайно влюблена","speaking_style":"Формальный","text_color":"#4da6ff","emoji":"👑","sprite":"girl_hana","position":"center"},
+            "haru": {"id":"haru","name":"Хару","role":"весельчак","personality":"Шутник, наблюдательный","speaking_style":"Шутливый","text_color":"#ffd700","emoji":"😄","sprite":"boy_haru","position":"left"},
+            "akira": {"id":"akira","name":"Акира","role":"программист","personality":"Интроверт","speaking_style":"Технический","text_color":"#7cfc00","emoji":"💻","sprite":"boy_akira","position":"right"},
+            "sensei": {"id":"sensei","name":"Танака-сенсей","role":"учитель","personality":"Мудрый","speaking_style":"Учительский","text_color":"#deb887","emoji":"👨‍🏫","sprite":"boy_sensei","position":"center"},
+            "yumi": {"id":"yumi","name":"Юми","role":"медсестра","personality":"Добрая","speaking_style":"Мягкий","text_color":"#ff9999","emoji":"💉","sprite":"girl_yumi","position":"left"},
+            "ryuu": {"id":"ryuu","name":"Рю","role":"капитан кендо","personality":"Молчаливый","speaking_style":"Краткий","text_color":"#808080","emoji":"⚔️","sprite":"boy_ryuu","position":"right"},
+            "emi": {"id":"emi","name":"Эми","role":"журналистка","personality":"Любопытная","speaking_style":"Быстрый","text_color":"#ff1493","emoji":"📰","sprite":"girl_emi","position":"center"}
         },
-
         "locations": {
-            "classroom": {"name": "Класс 2-B", "description": "Светлый класс с большими окнами", "mood": "Спокойный", "bg_image": "bg_classroom"},
-            "rooftop": {"name": "Школьная крыша", "description": "Крыша с видом на море и город", "mood": "Романтичный", "bg_image": "bg_rooftop"},
-            "library": {"name": "Библиотека", "description": "Трёхэтажная библиотека с пианино", "mood": "Загадочный", "bg_image": "bg_library"},
-            "courtyard": {"name": "Школьный двор", "description": "Двор с вековой сакурой", "mood": "Весенний", "bg_image": "bg_courtyard"},
-            "cafeteria": {"name": "Столовая", "description": "Просторная столовая с панорамными окнами", "mood": "Шумный", "bg_image": "bg_cafeteria"},
-            "gym": {"name": "Спортзал", "description": "Большой спортзал с площадкой", "mood": "Энергичный", "bg_image": "bg_gym"},
-            "clubroom": {"name": "Клубная комната", "description": "Уютная комната литклуба", "mood": "Творческий", "bg_image": "bg_clubroom"},
-            "nursery": {"name": "Медкабинет", "description": "Светлый кабинет с мятным запахом", "mood": "Успокаивающий", "bg_image": "bg_nursery"},
-            "park": {"name": "Приморский парк", "description": "Парк на берегу моря", "mood": "Романтичный", "bg_image": "bg_park"},
-            "mall": {"name": "ТЦ Сакура-Молл", "description": "Современный торговый центр", "mood": "Современный", "bg_image": "bg_mall"},
-            "beach": {"name": "Пляж", "description": "Песчаный пляж в 15 минутах от школы", "mood": "Свободный", "bg_image": "bg_beach"},
-            "shrine": {"name": "Храм", "description": "Старый синтоистский храм на холме", "mood": "Мистический", "bg_image": "bg_shrine"},
-            "hallway": {"name": "Коридор", "description": "Школьный коридор со шкафчиками", "mood": "Оживлённый", "bg_image": "bg_hallway"},
-            "gate": {"name": "Школьные ворота", "description": "Главные ворота Академии Сакура", "mood": "Встречающий", "bg_image": "bg_gate"},
-            "classroom_evening": {"name": "Класс вечером", "description": "Пустой класс после уроков", "mood": "Ностальгический", "bg_image": "bg_classroom_evening"}
+            "classroom":{"name":"Класс 2-B","bg_image":"bg_classroom"},
+            "rooftop":{"name":"Школьная крыша","bg_image":"bg_rooftop"},
+            "library":{"name":"Библиотека","bg_image":"bg_library"},
+            "courtyard":{"name":"Школьный двор","bg_image":"bg_courtyard"},
+            "cafeteria":{"name":"Столовая","bg_image":"bg_cafeteria"},
+            "gym":{"name":"Спортзал","bg_image":"bg_gym"},
+            "clubroom":{"name":"Клубная комната","bg_image":"bg_clubroom"},
+            "nursery":{"name":"Медкабинет","bg_image":"bg_nursery"},
+            "park":{"name":"Приморский парк","bg_image":"bg_park"},
+            "mall":{"name":"ТЦ Сакура-Молл","bg_image":"bg_mall"},
+            "beach":{"name":"Пляж","bg_image":"bg_beach"},
+            "shrine":{"name":"Храм","bg_image":"bg_shrine"},
+            "hallway":{"name":"Коридор","bg_image":"bg_hallway"},
+            "gate":{"name":"Школьные ворота","bg_image":"bg_gate"},
+            "classroom_evening":{"name":"Класс вечером","bg_image":"bg_classroom_evening"}
         },
-
         "rules_for_ai": """ТЫ — JSON-ГЕНЕРАТОР. Отвечай ТОЛЬКО валидным JSON без текста вне него.
 
-РАЗРЕШЁННЫЕ ЛОКАЦИИ (только эти): classroom, rooftop, library, courtyard, cafeteria, gym, clubroom, nursery, park, mall, beach, shrine, hallway, gate, classroom_evening
-
-РАЗРЕШЁННЫЕ SPEAKER_ID (только эти): narrator, garfild, monika, reiko, yuki, takeshi, hana, haru, akira, sensei, yumi, ryuu, emi
-
+РАЗРЕШЁННЫЕ ЛОКАЦИИ: classroom, rooftop, library, courtyard, cafeteria, gym, clubroom, nursery, park, mall, beach, shrine, hallway, gate, classroom_evening
+РАЗРЕШЁННЫЕ SPEAKER_ID: narrator, garfild, monika, reiko, yuki, takeshi, hana, haru, akira, sensei, yumi, ryuu, emi
 РАЗРЕШЁННЫЕ ЭМОЦИИ: normal, happy, sad, angry, surprised, excited, serious, shy, flirty, worried, proud
 
-ФОРМАТ ОТВЕТА (строго JSON, без текста вокруг):
-{
-  "time_of_day": "morning",
-  "response_type": "single_reply",
-  "narrator_text": "описание",
-  "speaker_id": "garfild",
-  "speaker_name": "Гарфилд",
-  "speaker_text": "текст",
-  "emotion": "normal",
-  "location": "classroom",
-  "dialog_end_marker": "silence",
-  "sprites": {
-    "garfild": {"visible": true, "position": "left", "highlight": true, "emotion": "normal"},
-    "monika": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
-    "reiko": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
-    "yuki": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
-    "takeshi": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
-    "hana": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
-    "haru": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
-    "akira": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
-    "sensei": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"},
-    "yumi": {"visible": false, "position": "left", "highlight": false, "emotion": "normal"},
-    "ryuu": {"visible": false, "position": "right", "highlight": false, "emotion": "normal"},
-    "emi": {"visible": false, "position": "center", "highlight": false, "emotion": "normal"}
-  }
-}
-
-ВАЖНО: location только из списка разрешённых. speaker_id только из списка разрешённых. Не выдумывай новые. Отвечай ТОЛЬКО JSON.""",
-
-        "first_scene_prompt": "{player_name} просыпается утром первого учебного дня. По дороге в школу встречает одноклассников во дворе."
+ФОРМАТ ОТВЕТА СТРОГО:
+{"time_of_day":"morning","response_type":"single_reply","narrator_text":"описание","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"текст","emotion":"normal","location":"classroom","dialog_end_marker":"silence","sprites":{"garfild":{"visible":true,"position":"left","highlight":true,"emotion":"normal"},"monika":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"reiko":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"yuki":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"takeshi":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"hana":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"haru":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"akira":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"sensei":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"yumi":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"ryuu":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"emi":{"visible":false,"position":"center","highlight":false,"emotion":"normal"}}}
+НЕ ПИШИ НИЧЕГО КРОМЕ JSON.""",
+        "first_scene_prompt": "{player_name} просыпается утром первого учебного дня. По дороге в школу встречает одноклассников."
     }
 }
 
 def get_worlds_list():
-    """Получить список доступных миров"""
     if supabase and IS_PRODUCTION:
         try:
             result = supabase.table('worlds').select('*').eq('is_active', True).execute()
-            if result.data:
-                return result.data
-        except:
-            pass
-
-    # Локальный список
-    return [
-        {
-            'world_id': wid,
-            'name': data['world_name'],
-            'description': data.get('description', ''),
-            'genre': data.get('genre', ''),
-            'image_url': data.get('image_url', '')
-        }
-        for wid, data in LOCAL_WORLDS.items()
-    ]
-
+            if result.data: return result.data
+        except: pass
+    return [{'world_id': wid, 'name': d['world_name'], 'description': d.get('description',''), 'genre': d.get('genre',''), 'image_url': d.get('image_url','')} for wid, d in LOCAL_WORLDS.items()]
 
 def get_world_data(world_id):
-    """Получить полные данные мира"""
     if supabase and IS_PRODUCTION:
         try:
-            # Пробуем загрузить из Supabase
             world = supabase.table('worlds').select('*').eq('world_id', world_id).single().execute()
             characters = supabase.table('world_characters').select('*').eq('world_id', world_id).execute()
             locations = supabase.table('world_locations').select('*').eq('world_id', world_id).execute()
             prompts = supabase.table('world_prompts').select('*').eq('world_id', world_id).single().execute()
-
             if world.data:
-                # Собираем персонажей
                 chars_dict = {}
-                for char in (characters.data or []):
-                    chars_dict[char['char_id']] = {
-                        'id': char['char_id'],
-                        'name': char['name'],
-                        'role': char.get('role', ''),
-                        'personality': char.get('personality', ''),
-                        'speaking_style': char.get('speaking_style', ''),
-                        'text_color': char.get('text_color', '#fff'),
-                        'emoji': char.get('emoji', ''),
-                        'sprite': char.get('sprite_name'),
-                        'position': char.get('default_position', 'center')
-                    }
-
-                # Собираем локации
+                for c in (characters.data or []):
+                    chars_dict[c['char_id']] = {'id': c['char_id'], 'name': c['name'], 'role': c.get('role',''), 'personality': c.get('personality',''), 'speaking_style': c.get('speaking_style',''), 'text_color': c.get('text_color','#fff'), 'emoji': c.get('emoji',''), 'sprite': c.get('sprite_name'), 'position': c.get('default_position','center')}
                 locs_dict = {}
-                for loc in (locations.data or []):
-                    locs_dict[loc['location_id']] = {
-                        'name': loc['name'],
-                        'description': loc.get('description', ''),
-                        'mood': loc.get('mood', ''),
-                        'bg_image': loc.get('bg_image', '')
-                    }
-
-                return {
-                    'world_name': world.data['name'],
-                    'setting': world.data.get('description', ''),
-                    'atmosphere': world.data.get('genre', ''),
-                    'characters': chars_dict,
-                    'locations': locs_dict,
-                    'rules_for_ai': prompts.data.get('system_prompt', '') if prompts.data else '',
-                    'first_scene_prompt': prompts.data.get('first_scene_prompt', '') if prompts.data else ''
-                }
+                for l in (locations.data or []):
+                    locs_dict[l['location_id']] = {'name': l['name'], 'description': l.get('description',''), 'mood': l.get('mood',''), 'bg_image': l.get('bg_image','')}
+                return {'world_name': world.data['name'], 'setting': world.data.get('description',''), 'atmosphere': world.data.get('genre',''), 'characters': chars_dict, 'locations': locs_dict, 'rules_for_ai': prompts.data.get('system_prompt','') if prompts.data else '', 'first_scene_prompt': prompts.data.get('first_scene_prompt','') if prompts.data else ''}
         except Exception as e:
-            print(f"⚠️ Ошибка загрузки мира из Supabase: {e}")
-
-    # Возвращаем локальный мир
+            print(f"⚠️ Ошибка загрузки мира: {e}")
     return LOCAL_WORLDS.get(world_id, LOCAL_WORLDS['academy_sakura'])
-
 
 # ============================================
 # ХРАНИЛИЩЕ ИГР
@@ -309,15 +198,12 @@ def load_games_local():
             with open(STORAGE_FILE, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
                 return json.loads(content) if content else {}
-        except:
-            return {}
+        except: return {}
     return {}
-
 
 def save_games_local(games):
     with open(STORAGE_FILE, 'w', encoding='utf-8') as f:
         json.dump(games, f, ensure_ascii=False, indent=2)
-
 
 def get_game_supabase(session_id):
     if not supabase: return None
@@ -325,380 +211,218 @@ def get_game_supabase(session_id):
         result = supabase.table('game_sessions').select('*').eq('session_id', session_id).single().execute()
         if result.data:
             game = dict(result.data)
-            # Парсим JSON поля обратно
-            if isinstance(game.get('game_history'), str):
-                game['game_history'] = json.loads(game['game_history'])
-            if isinstance(game.get('ai_context'), str):
-                game['ai_context'] = json.loads(game['ai_context'])
+            if isinstance(game.get('game_history'), str): game['game_history'] = json.loads(game['game_history'])
+            if isinstance(game.get('ai_context'), str): game['ai_context'] = json.loads(game['ai_context'])
             return game
-        return None
-    except Exception as e:
-        print(f"❌ Supabase get error: {e}")
-        return None
-
+    except: pass
+    return None
 
 def save_game_supabase(game_data):
     if not supabase: return False
     try:
-        # Только нужные колонки для Supabase
-        supabase_data = {
-            'session_id': game_data['session_id'],
-            'player_name': game_data['player_name'],
-            'world_id': game_data.get('world_id', 'academy_sakura'),
-            'world_name': game_data.get('world_name', 'Академия Сакура'),
-            'status': game_data.get('status', 'active'),
-            'current_location': game_data.get('current_location', 'classroom'),
-            'game_history': json.dumps(game_data.get('game_history', [])),
-            'ai_context': json.dumps(game_data.get('ai_context', {}))
-        }
-
+        data = {'session_id': game_data['session_id'], 'player_name': game_data['player_name'], 'world_id': game_data.get('world_id','academy_sakura'), 'world_name': game_data.get('world_name','Академия Сакура'), 'status': game_data.get('status','active'), 'current_location': game_data.get('current_location','classroom'), 'game_history': json.dumps(game_data.get('game_history',[])), 'ai_context': json.dumps(game_data.get('ai_context',{}))}
         existing = supabase.table('game_sessions').select('id').eq('session_id', game_data['session_id']).execute()
-        if existing.data:
-            supabase.table('game_sessions').update(supabase_data).eq('session_id', game_data['session_id']).execute()
-        else:
-            supabase.table('game_sessions').insert(supabase_data).execute()
+        if existing.data: supabase.table('game_sessions').update(data).eq('session_id', game_data['session_id']).execute()
+        else: supabase.table('game_sessions').insert(data).execute()
         return True
     except Exception as e:
-        print(f"❌ Supabase save error: {e}")
+        print(f"❌ Supabase save: {e}")
         return False
 
-
 def get_game(session_id):
-    if IS_PRODUCTION and supabase:
-        return get_game_supabase(session_id)
-    games = load_games_local()
-    return games.get(session_id)
-
+    if IS_PRODUCTION and supabase: return get_game_supabase(session_id)
+    return load_games_local().get(session_id)
 
 def save_game(game_data):
-    if IS_PRODUCTION and supabase:
-        return save_game_supabase(game_data)
+    if IS_PRODUCTION and supabase: return save_game_supabase(game_data)
     games = load_games_local()
     games[game_data['session_id']] = game_data
     save_games_local(games)
     return True
 
-
 # ============================================
-# DEEPSEEK API
+# DEEPSEEK
 # ============================================
 def call_deepseek(messages, max_tokens=800):
-    if not DEEPSEEK_API_KEY:
-        return get_test_response()
-
-    headers = {
-        'Authorization': f'Bearer {DEEPSEEK_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-
-    data = {
-        'model': 'deepseek-chat',
-        'messages': messages,
-        'max_tokens': max_tokens,
-        'temperature': 0.8,
-        'stop': None  # Не обрезать ответ
-    }
-
+    if not DEEPSEEK_API_KEY: return get_test_response()
     try:
-        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=60)
-        response.raise_for_status()
-        result = response.json()
-
-        content = result['choices'][0]['message']['content']
-
-        # Очистка
-        content = content.strip()
-        if content.startswith('```json'):
-            content = content[7:]
-        if content.startswith('```'):
-            content = content[3:]
-        if content.endswith('```'):
-            content = content[:-3]
-        content = content.strip()
-
-        # Проверяем что JSON валидный
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError:
-            # Пробуем исправить обрезанный JSON
-            # Добавляем недостающие скобки
-            if not content.endswith('}'):
-                # Находим последнюю валидную строку
-                lines = content.split('\n')
-                # Убираем последнюю обрезанную строку
-                lines = lines[:-1]
-                # Добавляем закрывающие скобки
-                fixed = '\n'.join(lines) + '\n  }\n}'
-                try:
-                    return json.loads(fixed)
-                except:
-                    pass
-            raise
-
-    except json.JSONDecodeError as e:
-        print(f"❌ JSON Parse Error: {e}")
-        print(f"Raw: {content[:300] if 'content' in dir() else 'N/A'}...")
-        return get_test_response()
-    except requests.Timeout:
-        print("❌ DeepSeek Timeout")
-        return get_test_response()
+        resp = requests.post(DEEPSEEK_API_URL, headers={'Authorization': f'Bearer {DEEPSEEK_API_KEY}', 'Content-Type': 'application/json'}, json={'model': 'deepseek-chat', 'messages': messages, 'max_tokens': max_tokens, 'temperature': 0.8}, timeout=60)
+        resp.raise_for_status()
+        content = resp.json()['choices'][0]['message']['content'].strip()
+        if content.startswith('```json'): content = content[7:]
+        if content.startswith('```'): content = content[3:]
+        if content.endswith('```'): content = content[:-3]
+        return json.loads(content.strip())
     except Exception as e:
-        print(f"❌ DeepSeek Error: {e}")
+        print(f"❌ DeepSeek: {e}")
         return get_test_response()
-
 
 def get_test_response():
     import random
-    responses = [
-        {
-            "narrator_text": "Солнечный свет заливает класс через большие окна.",
-            "speaker_id": "monika",
-            "speaker_name": "Моника",
-            "speaker_text": "О, привет! Ты новый ученик? Я Моника. Добро пожаловать в Академию Сакура!",
-            "emotion": "happy",
-            "location": "classroom",
-            "sprites": {
-                "garfild": {"visible": True, "position": "left", "highlight": False, "emotion": "normal"},
-                "monika": {"visible": True, "position": "center", "highlight": True, "emotion": "happy"},
-                "reiko": {"visible": True, "position": "right", "highlight": False, "emotion": "normal"}
-            }
-        },
-        {
-            "narrator_text": "Гарфилд поправляет очки и смотрит на расписание.",
-            "speaker_id": "garfild",
-            "speaker_name": "Гарфилд",
-            "speaker_text": "Приветствую. Я староста класса. Обращайся если нужна помощь с учёбой.",
-            "emotion": "serious",
-            "location": "classroom",
-            "sprites": {
-                "garfild": {"visible": True, "position": "left", "highlight": True, "emotion": "serious"},
-                "monika": {"visible": True, "position": "center", "highlight": False, "emotion": "normal"},
-                "reiko": {"visible": False, "position": "right", "highlight": False, "emotion": "normal"}
-            }
-        },
-        {
-            "narrator_text": "Рейко вбегает в класс, чуть не споткнувшись.",
-            "speaker_id": "reiko",
-            "speaker_name": "Рейко",
-            "speaker_text": "ОЙ! Приве-е-ет! Ты новенький? Давай дружить! У нас тут весело!",
-            "emotion": "excited",
-            "location": "classroom",
-            "sprites": {
-                "garfild": {"visible": False, "position": "left", "highlight": False, "emotion": "normal"},
-                "monika": {"visible": False, "position": "center", "highlight": False, "emotion": "normal"},
-                "reiko": {"visible": True, "position": "center", "highlight": True, "emotion": "excited"}
-            }
-        }
-    ]
-    return random.choice(responses)
-
+    return random.choice([
+        {"narrator_text":"Солнечный свет заливает класс.","speaker_id":"monika","speaker_name":"Моника","speaker_text":"Привет! Добро пожаловать в Академию Сакура!","emotion":"happy","location":"classroom","sprites":{"garfild":{"visible":True,"position":"left","highlight":False,"emotion":"normal"},"monika":{"visible":True,"position":"center","highlight":True,"emotion":"happy"},"reiko":{"visible":True,"position":"right","highlight":False,"emotion":"normal"},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}},
+        {"narrator_text":"Гарфилд поправляет очки.","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"Приветствую. Я староста.","emotion":"serious","location":"classroom","sprites":{"garfild":{"visible":True,"position":"left","highlight":True,"emotion":"serious"},"monika":{"visible":True,"position":"center","highlight":False,"emotion":"normal"},"reiko":{"visible":False},"yuki":{"visible":False},"takeshi":{"visible":False},"hana":{"visible":False},"haru":{"visible":False},"akira":{"visible":False},"sensei":{"visible":False},"yumi":{"visible":False},"ryuu":{"visible":False},"emi":{"visible":False}}}
+    ])
 
 # ============================================
-# МАРШРУТЫ FLASK
+# МАРШРУТЫ
 # ============================================
-
 @app.route('/')
 def index():
+    # Проверяем авторизацию
+    token = request.cookies.get('auth_token', '')
+    if not token:
+        return render_template('login.html')  # Сразу страница входа
+
+    # Проверяем валидность токена
+    user_login = token.split(':')[0]
+    user = get_user(user_login)
+    if not user:
+        return render_template('login.html')
+
     return render_template('index.html')
 
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/register')
+def register_page():
+    return render_template('register.html')
+
+@app.route('/game')
+def game_page():
+    session_id = request.args.get('session', '')
+    game = get_game(session_id)
+    if not game:
+        return "Игра не найдена", 404
+    user_agent = request.headers.get('User-Agent', '').lower()
+    is_mobile = any(d in user_agent for d in ['mobile', 'android', 'iphone', 'ipad', 'ipod'])
+    return render_template('game_mobile.html' if is_mobile else 'game.html', game=game)
 
 @app.route('/static/images/<path:filename>')
 def serve_image(filename):
     return send_from_directory('static/images', filename)
 
+# API: миры
+@app.route('/api/worlds')
+def api_worlds():
+    return jsonify({'success': True, 'worlds': get_worlds_list()})
 
-@app.route('/api/worlds', methods=['GET'])
-def api_get_worlds():
-    """Получить список доступных миров"""
-    try:
-        worlds = get_worlds_list()
-        return jsonify({'success': True, 'worlds': worlds})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+# API: пользователи
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json(force=True)
+    username = data.get('username','').strip()
+    login = data.get('login','').strip()
+    password = data.get('password','').strip()
+    pc = data.get('password_confirm','').strip()
+    dn = data.get('display_name','').strip() or username
+    if not all([username, login, password]): return jsonify({'success': False, 'error': 'Все поля обязательны'}), 400
+    if len(login) < 3 or len(password) < 4: return jsonify({'success': False, 'error': 'Минимум 3 символа логин, 4 пароль'}), 400
+    if password != pc: return jsonify({'success': False, 'error': 'Пароли не совпадают'}), 400
+    ok, msg = create_user(username, login, password, dn)
+    return jsonify({'success': ok, 'error' if not ok else 'message': msg}), (200 if ok else 400)
 
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json(force=True)
+    user = get_user(data.get('login','').strip())
+    if not user or user['password_hash'] != hash_password(data.get('password','').strip()):
+        return jsonify({'success': False, 'error': 'Неверный логин или пароль'}), 401
+    token = f"{user['login']}:{hash_password(user['login'] + 'secret')[:16]}"
+    resp = jsonify({'success': True, 'user': {'username': user['username'], 'display_name': user.get('display_name', user['username']), 'is_admin': user.get('is_admin', False)}})
+    resp.set_cookie('auth_token', token, max_age=30*24*60*60, httponly=True, samesite='Lax')
+    return resp
 
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    resp = jsonify({'success': True})
+    resp.delete_cookie('auth_token')
+    return resp
+
+@app.route('/api/me')
+def api_me():
+    token = request.cookies.get('auth_token', '')
+    if not token: return jsonify({'success': False}), 401
+    user = get_user(token.split(':')[0])
+    return jsonify({'success': True, 'user': {'username': user['username'], 'display_name': user.get('display_name', user['username']), 'is_admin': user.get('is_admin', False)}}) if user else jsonify({'success': False}), 401
+
+# API: игра
 @app.route('/api/create_game', methods=['POST'])
 def create_game():
-    """Создание новой игры"""
-    try:
-        data = request.get_json(force=True)
-        character_name = data.get('character_name', '').strip()
-        world_id = data.get('world_id', 'academy_sakura')
-
-        if not character_name:
-            return jsonify({'success': False, 'error': 'Введи имя персонажа!'}), 400
-
-        # Загружаем данные мира
-        world_db = get_world_data(world_id)
-
-        session_id = datetime.now().strftime('%Y%m%d_%H%M%S') + '_' + uuid.uuid4().hex[:4]
-
-        # Формируем первый промт
-        first_prompt = world_db.get('first_scene_prompt', 'Начинается новая игра.')
-        first_prompt = first_prompt.replace('{player_name}', character_name)
-
-        initial_messages = [
-            {'role': 'system', 'content': world_db.get('rules_for_ai', '')},
-            {'role': 'user', 'content': first_prompt}
-        ]
-
-        first_scene = call_deepseek(initial_messages)
-
-        if not first_scene:
-            first_scene = get_test_response()
-
-        first_scene['type'] = 'scene'
-
-        # Определяем начальную локацию
-        default_location = first_scene.get('location', 'classroom')
-        if not default_location or default_location not in world_db.get('locations', {}):
-            locations = list(world_db.get('locations', {}).keys())
-            default_location = locations[0] if locations else 'classroom'
-
-        game_data = {
-            'session_id': session_id,
-            'player_name': character_name,
-            'world_id': world_id,
-            'created_at': datetime.now().isoformat(),
-            'status': 'active',
-            'current_location': default_location,
-            'game_history': [first_scene],
-            'ai_context': {
-                'world_id': world_id,
-                'messages': initial_messages + [
-                    {'role': 'assistant', 'content': json.dumps(first_scene, ensure_ascii=False)}
-                ]
-            }
-        }
-
-        save_game(game_data)
-
-        print(f"✅ Игра создана: {character_name} | Мир: {world_id} | ID: {session_id}")
-
-        return jsonify({
-            'success': True,
-            'session_id': session_id,
-            'redirect': f'/game?session={session_id}'
-        })
-
-    except Exception as e:
-        print(f"❌ Create error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
+    data = request.get_json(force=True)
+    name = data.get('character_name', '').strip()
+    wid = data.get('world_id', 'academy_sakura')
+    if not name: return jsonify({'success': False, 'error': 'Введи имя'}), 400
+    wdb = LOCAL_WORLDS.get(wid, LOCAL_WORLDS['academy_sakura'])
+    sid = datetime.now().strftime('%Y%m%d_%H%M%S') + '_' + uuid.uuid4().hex[:4]
+    msgs = [{'role': 'system', 'content': wdb['rules_for_ai']}, {'role': 'user', 'content': wdb.get('first_scene_prompt','').replace('{player_name}', name)}]
+    scene = call_deepseek(msgs) or get_test_response()
+    scene['type'] = 'scene'
+    game_data = {'session_id': sid, 'player_name': name, 'world_id': wid, 'created_at': datetime.now().isoformat(), 'status': 'active', 'current_location': scene.get('location','classroom'), 'game_history': [scene], 'ai_context': {'world_id': wid, 'messages': msgs + [{'role': 'assistant', 'content': json.dumps(scene, ensure_ascii=False)}]}}
+    save_game(game_data)
+    return jsonify({'success': True, 'session_id': sid, 'redirect': f'/game?session={sid}'})
 
 @app.route('/api/game_action', methods=['POST'])
 def game_action():
-    """Обработка действия игрока"""
-    try:
-        data = request.get_json(force=True)
-        session_id = data.get('session_id')
-        player_action = data.get('action', '').strip()
-
-        game = get_game(session_id)
-        if not game:
-            return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
-
-        # Добавляем действие игрока
-        game['ai_context']['messages'].append({
-            'role': 'user',
-            'content': f'Действие игрока: {player_action}'
-        })
-
-        game['game_history'].append({
-            'type': 'player_action',
-            'player_text': player_action
-        })
-
-        # Получаем ответ от AI
-        scene = call_deepseek(game['ai_context']['messages'])
-
-        if not scene:
-            scene = get_test_response()
-
-        scene['type'] = 'scene'
-
-        game['ai_context']['messages'].append({
-            'role': 'assistant',
-            'content': json.dumps(scene, ensure_ascii=False)
-        })
-        game['game_history'].append(scene)
-
-        if 'location' in scene:
-            game['current_location'] = scene['location']
-
-        save_game(game)
-
-        return jsonify({
-            'success': True,
-            'scene': scene,
-            'location': game['current_location']
-        })
-
-    except Exception as e:
-        print(f"❌ Action error: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
-
+    data = request.get_json(force=True)
+    game = get_game(data.get('session_id',''))
+    if not game: return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    action = data.get('action','').strip()
+    game['ai_context']['messages'].append({'role': 'user', 'content': f'Действие: {action}'})
+    game['game_history'].append({'type': 'player_action', 'player_text': action})
+    scene = call_deepseek(game['ai_context']['messages']) or get_test_response()
+    scene['type'] = 'scene'
+    game['ai_context']['messages'].append({'role': 'assistant', 'content': json.dumps(scene, ensure_ascii=False)})
+    game['game_history'].append(scene)
+    if 'location' in scene: game['current_location'] = scene['location']
+    save_game(game)
+    return jsonify({'success': True, 'scene': scene, 'location': game['current_location']})
 
 @app.route('/api/load_game_data')
 def load_game_data():
-    """Загрузка данных игры"""
-    session_id = request.args.get('session', '')
-    game = get_game(session_id)
+    game = get_game(request.args.get('session',''))
+    if not game: return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+    wdb = LOCAL_WORLDS.get(game.get('world_id','academy_sakura'), LOCAL_WORLDS['academy_sakura'])
+    loc_name = wdb.get('locations',{}).get(game.get('current_location','classroom'),{}).get('name','Локация')
+    return jsonify({'success': True, 'game': {'session_id': game['session_id'], 'player_name': game['player_name'], 'world_id': game.get('world_id','academy_sakura'), 'current_location': game.get('current_location','classroom'), 'location_name': loc_name, 'game_history': game.get('game_history',[])}})
 
-    if not game:
-        return jsonify({'success': False, 'error': 'Игра не найдена'}), 404
+# API: сохранения
+@app.route('/api/saves')
+def api_saves():
+    token = request.cookies.get('auth_token','')
+    if not token: return jsonify({'success': True, 'saves': []})
+    ul = token.split(':')[0]
+    saves = []
+    if IS_PRODUCTION and supabase:
+        try:
+            r = supabase.table('player_saves').select('*').eq('user_login', ul).order('last_updated', desc=True).execute()
+            saves = r.data or []
+        except: pass
+    else:
+        for sid, g in load_games_local().items():
+            saves.append({'session_id': sid, 'player_name': g.get('player_name',''), 'world_id': g.get('world_id',''), 'world_name': g.get('world_name',''), 'current_location': g.get('current_location',''), 'last_updated': g.get('created_at',''), 'status': g.get('status','active')})
+        saves.sort(key=lambda x: x.get('last_updated',''), reverse=True)
+    return jsonify({'success': True, 'saves': saves})
 
-    # Загружаем мир
-    world_id = game.get('world_id', 'academy_sakura')
-    world_db = get_world_data(world_id)
-
-    current_loc = game.get('current_location', 'classroom')
-    location_name = world_db.get('locations', {}).get(current_loc, {}).get('name', 'Локация')
-
-    return jsonify({
-        'success': True,
-        'game': {
-            'session_id': game['session_id'],
-            'player_name': game['player_name'],
-            'world_id': world_id,
-            'current_location': current_loc,
-            'location_name': location_name,
-            'game_history': game.get('game_history', [])
-        }
-    })
-
+@app.route('/api/saves/delete', methods=['POST'])
+def api_saves_delete():
+    sid = request.get_json(force=True).get('session_id','')
+    if IS_PRODUCTION and supabase:
+        try:
+            supabase.table('player_saves').delete().eq('session_id', sid).execute()
+            supabase.table('game_sessions').delete().eq('session_id', sid).execute()
+        except: pass
+    else:
+        g = load_games_local()
+        if sid in g: del g[sid]; save_games_local(g)
+    return jsonify({'success': True})
 
 @app.route('/api/health')
 def health():
-    """Проверка состояния сервера"""
-    return jsonify({
-        'status': 'ok',
-        'mode': 'production' if IS_PRODUCTION else 'local',
-        'storage': 'supabase' if (IS_PRODUCTION and supabase) else 'json',
-        'api': bool(DEEPSEEK_API_KEY),
-        'supabase': bool(supabase),
-        'worlds_available': len(get_worlds_list()),
-        'timestamp': datetime.now().isoformat()
-    })
+    return jsonify({'status': 'ok', 'mode': 'production' if IS_PRODUCTION else 'local', 'api': bool(DEEPSEEK_API_KEY), 'timestamp': datetime.now().isoformat()})
 
-
-# ============================================
-# ЗАПУСК
-# ============================================
 if __name__ == '__main__':
-    print("=" * 60)
-    print("🎮 RP Future - Мульти-мировая новелла")
-    print("=" * 60)
-    print(f"🔧 Режим: {'PRODUCTION (Render)' if IS_PRODUCTION else 'LOCAL'}")
-    print(f"💾 Хранилище: {'Supabase' if (IS_PRODUCTION and supabase) else 'JSON файл'}")
-    print(f"🔑 DeepSeek API: {'✅ Подключен' if DEEPSEEK_API_KEY else '⚠️ Тестовый режим'}")
-    print(f"🌍 Миров доступно: {len(get_worlds_list())}")
-    print("=" * 60)
-    print("🌐 http://localhost:5000")
-    print("📝 Ctrl+C для остановки")
-    print("=" * 60)
-
-    port = int(os.getenv('PORT', 5000))
-    debug = not IS_PRODUCTION
-
-    app.run(debug=debug, host='0.0.0.0', port=port, threaded=True)
+    print(f"🎮 RP Future | {'PRODUCTION' if IS_PRODUCTION else 'LOCAL'} | API: {'✅' if DEEPSEEK_API_KEY else '⚠️'}")
+    app.run(debug=not IS_PRODUCTION, host='0.0.0.0', port=int(os.getenv('PORT', 5000)), threaded=True)
