@@ -83,68 +83,7 @@ def create_user(username, login, password, display_name):
 # ============================================
 # МИРЫ
 # ============================================
-LOCAL_WORLDS = {
-    "academy_sakura": {
-        "world_name": "Академия Сакура",
-        "setting": "Японская старшая школа, весна, цветение сакуры",
-        "atmosphere": "Тёплая, уютная, повседневная",
-        "main_storyline": "Главный герой переводится в новую школу",
-        "genre": "school",
-        "description": "Школьная повседневность в японской старшей школе",
-        "image_url": "/static/images/worlds/school_preview.png",
-        "characters": {
-            "narrator": {"id":"narrator","name":"Рассказчик","role":"narrator","personality":"Нейтральный","speaking_style":"Литературный","text_color":"#c0c0c0","sprite":None},
-            "garfild": {"id":"garfild","name":"Гарфилд","role":"староста","personality":"Перфекционист, тайно пишет стихи","speaking_style":"Вежливый","text_color":"#ff8c42","emoji":"📋","sprite":"boy_garfild","position":"left"},
-            "monika": {"id":"monika","name":"Моника","role":"президент литклуба","personality":"Харизматичная, загадочная","speaking_style":"Элегантный","text_color":"#ff69b4","emoji":"📚","sprite":"girl_monika","position":"center"},
-            "reiko": {"id":"reiko","name":"Рейко","role":"спортсменка","personality":"Энергичная, боится травмы","speaking_style":"Эмоциональный","text_color":"#00d4aa","emoji":"🏃‍♀️","sprite":"girl_reiko","position":"right"},
-            "yuki": {"id":"yuki","name":"Юки","role":"художница","personality":"Застенчивая","speaking_style":"Тихий","text_color":"#b8a9d4","emoji":"🎨","sprite":"girl_yuki","position":"left"},
-            "takeshi": {"id":"takeshi","name":"Такеши","role":"хулиган","personality":"Грубый, но добрый","speaking_style":"Грубоватый","text_color":"#ff4444","emoji":"👊","sprite":"boy_takeshi","position":"right"},
-            "hana": {"id":"hana","name":"Хана","role":"президент студсовета","personality":"Властная, тайно влюблена","speaking_style":"Формальный","text_color":"#4da6ff","emoji":"👑","sprite":"girl_hana","position":"center"},
-            "haru": {"id":"haru","name":"Хару","role":"весельчак","personality":"Шутник, наблюдательный","speaking_style":"Шутливый","text_color":"#ffd700","emoji":"😄","sprite":"boy_haru","position":"left"},
-            "akira": {"id":"akira","name":"Акира","role":"программист","personality":"Интроверт","speaking_style":"Технический","text_color":"#7cfc00","emoji":"💻","sprite":"boy_akira","position":"right"},
-            "sensei": {"id":"sensei","name":"Танака-сенсей","role":"учитель","personality":"Мудрый","speaking_style":"Учительский","text_color":"#deb887","emoji":"👨‍🏫","sprite":"boy_sensei","position":"center"},
-            "yumi": {"id":"yumi","name":"Юми","role":"медсестра","personality":"Добрая","speaking_style":"Мягкий","text_color":"#ff9999","emoji":"💉","sprite":"girl_yumi","position":"left"},
-            "ryuu": {"id":"ryuu","name":"Рю","role":"капитан кендо","personality":"Молчаливый","speaking_style":"Краткий","text_color":"#808080","emoji":"⚔️","sprite":"boy_ryuu","position":"right"},
-            "emi": {"id":"emi","name":"Эми","role":"журналистка","personality":"Любопытная","speaking_style":"Быстрый","text_color":"#ff1493","emoji":"📰","sprite":"girl_emi","position":"center"}
-        },
-        "locations": {
-            "classroom":{"name":"Класс 2-B","bg_image":"bg_classroom"},"rooftop":{"name":"Школьная крыша","bg_image":"bg_rooftop"},
-            "library":{"name":"Библиотека","bg_image":"bg_library"},"courtyard":{"name":"Школьный двор","bg_image":"bg_courtyard"},
-            "cafeteria":{"name":"Столовая","bg_image":"bg_cafeteria"},"gym":{"name":"Спортзал","bg_image":"bg_gym"},
-            "clubroom":{"name":"Клубная комната","bg_image":"bg_clubroom"},"nursery":{"name":"Медкабинет","bg_image":"bg_nursery"},
-            "park":{"name":"Приморский парк","bg_image":"bg_park"},"mall":{"name":"ТЦ Сакура-Молл","bg_image":"bg_mall"},
-            "beach":{"name":"Пляж","bg_image":"bg_beach"},"shrine":{"name":"Храм","bg_image":"bg_shrine"},
-            "hallway":{"name":"Коридор","bg_image":"bg_hallway"},"gate":{"name":"Школьные ворота","bg_image":"bg_gate"},
-            "classroom_evening":{"name":"Класс вечером","bg_image":"bg_classroom_evening"}
-        },
-        "rules_for_ai": """ТЫ — JSON-ГЕНЕРАТОР. Отвечай ТОЛЬКО валидным JSON без текста вне него.
 
-РАЗРЕШЁННЫЕ ЛОКАЦИИ: classroom, rooftop, library, courtyard, cafeteria, gym, clubroom, nursery, park, mall, beach, shrine, hallway, gate, classroom_evening
-РАЗРЕШЁННЫЕ SPEAKER_ID: narrator, garfild, monika, reiko, yuki, takeshi, hana, haru, akira, sensei, yumi, ryuu, emi
-РАЗРЕШЁННЫЕ ЭМОЦИИ: normal, happy, sad, angry, surprised, excited, serious, shy, flirty, worried, proud
-
-== СИСТЕМА ОТНОШЕНИЙ ==
-У каждого персонажа шкала отношений от -100 (ненависть) до +100 (любовь/лучшие друзья). 0 = нейтрально.
-Игрок влияет на отношения только значимыми поступками.
-
-Изменения:
-+5: помог, защитил, комплимент, поддержал в споре
-+10: серьёзная помощь, заступился перед учителем, подарил подарок
-+15: спас от угрозы, раскрыл важный секрет, провёл особенное время
--5: нагрубил, проигнорировал, опоздал
--10: оскорбил, предал доверие, высмеял увлечение
--15: серьёзное предательство, публичное унижение, угроза
-
-Тон речи зависит от отношений (учитывай это в speaker_text).
-
-ФОРМАТ ОТВЕТА:
-{"time_of_day":"morning","response_type":"single_reply","narrator_text":"описание","speaker_id":"garfild","speaker_name":"Гарфилд","speaker_text":"текст","emotion":"normal","location":"classroom","dialog_end_marker":"silence","relationship_changes":{"garfild":5},"sprites":{"garfild":{"visible":true,"position":"left","highlight":true,"emotion":"normal"},"monika":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"reiko":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"yuki":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"takeshi":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"hana":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"haru":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"akira":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"sensei":{"visible":false,"position":"center","highlight":false,"emotion":"normal"},"yumi":{"visible":false,"position":"left","highlight":false,"emotion":"normal"},"ryuu":{"visible":false,"position":"right","highlight":false,"emotion":"normal"},"emi":{"visible":false,"position":"center","highlight":false,"emotion":"normal"}}}
-
-relationship_changes включай ТОЛЬКО если действие изменило отношения. НЕ включай пустой relationship_changes.
-НЕ ПИШИ НИЧЕГО КРОМЕ JSON.""",
-        "first_scene_prompt": "{player_name} просыпается утром первого учебного дня. По дороге в школу встречает одноклассников."
-    }
-}
 
 def get_worlds_list():
     if supabase and IS_PRODUCTION:
